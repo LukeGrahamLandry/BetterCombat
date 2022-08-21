@@ -1,6 +1,6 @@
 package net.bettercombat.api;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 /**

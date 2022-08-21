@@ -13,15 +13,7 @@ public class ServerPlayNetworkHandlerMixin {
     @Redirect(method = "onPlayerAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;getStackInHand(Lnet/minecraft/util/Hand;)Lnet/minecraft/item/ItemStack;"))
     public ItemStack getStackInHand(ServerPlayerEntity instance, Hand hand) {
         ServerPlayerEntity player = instance;
-        ItemStack result = null;
-        switch (hand) {
-            case MAIN_HAND -> {
-                result = ((PlayerEntityAccessor)player).getInventory().getMainHandStack();
-            }
-            case OFF_HAND -> {
-                result = ((PlayerEntityAccessor)player).getInventory().offHand.get(0);
-            }
-        }
+        ItemStack result = player.getStackInHand(hand);
         return result;
     }
 }

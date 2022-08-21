@@ -48,7 +48,7 @@ public class ColliderDebugRenderer {
         if (hand == null) {
             return;
         }
-        WeaponAttributes attributes = hand.attributes();
+        WeaponAttributes attributes = hand.attributes;
         if (attributes == null) {
             return;
         }
@@ -56,7 +56,7 @@ public class ColliderDebugRenderer {
         TargetFinder.TargetResult target = TargetFinder.findAttackTargetResult(
                 player,
                 cursorTarget,
-                hand.attack(),
+                hand.attack,
                 attributes.attackRange());
         boolean collides = target.entities.size() > 0;
         Vec3d cameraOffset = camera.getPos().negate();

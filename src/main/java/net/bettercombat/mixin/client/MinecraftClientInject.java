@@ -37,6 +37,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static net.minecraft.util.hit.HitResult.Type.BLOCK;
@@ -44,7 +46,8 @@ import static net.minecraft.util.hit.HitResult.Type.BLOCK;
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientInject implements MinecraftClientExtension {
     @Shadow public ClientWorld world;
-    @Shadow @Nullable public ClientPlayerEntity player;
+    @Shadow @Nullable
+    public ClientPlayerEntity player;
     @Shadow @Final public TextRenderer textRenderer;
 
     private MinecraftClient thisClient() {
@@ -197,8 +200,8 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
         float attackCooldownTicks = player.getAttackCooldownProgressPerTick(); // `getAttackCooldownProgressPerTick` should be called `getAttackCooldownLengthTicks`
         this.upswingTicks = (int)(Math.round(attackCooldownTicks * upswingRate));
 //        System.out.println("Starting upswingTicks: " + upswingTicks);
-        String animationName = hand.attack().animation();
-        boolean isOffHand = hand.isOffHand();
+        String animationName = hand.attack.animation();
+        boolean isOffHand = hand.isOffHand;
         ((PlayerAttackAnimatable) player).playAttackAnimation(animationName, isOffHand, attackCooldownTicks);
         ClientPlayNetworking.send(
                 Packets.AttackAnimation.ID,
@@ -267,12 +270,12 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
             MinecraftClient client = thisClient();
             AttackHand hand = PlayerAttackHelper.getCurrentAttack(player, getComboCount());
             WeaponAttributes attributes = WeaponRegistry.getAttributes(client.player.getMainHandStack());
-            List<Entity> targets = List.of();
+            List<Entity> targets = new ArrayList<>();
             if (attributes != null) {
                 targets = TargetFinder.findAttackTargets(
                     player,
                     getCursorTarget(),
-                    hand.attack(),
+                    hand.attack,
                     attributes.attackRange());
             }
             updateTargetsInRage(targets);
@@ -295,7 +298,7 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
         MinecraftClient client = thisClient();
         AttackHand hand = getCurrentHand();
         if (hand == null) { return; }
-        WeaponAttributes.Attack attack = hand.attack();
+        WeaponAttributes.Attack attack = hand.attack;
         double upswingRate = hand.upswingRate();
         if (client.player.getAttackCooldownProgress(0) < (1.0 - upswingRate)) {
             return;
@@ -305,7 +308,7 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
                 player,
                 getCursorTarget(),
                 attack,
-                hand.attributes().attackRange());
+                hand.attributes.attackRange());
         updateTargetsInRage(targets);
         ClientPlayNetworking.send(
                 Packets.C2S_AttackRequest.ID,
@@ -313,8 +316,8 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
         client.player.resetLastAttackedTicks();
         ((MinecraftClientAccessor) client).setAttackCooldown(10); // This is actually the mining cooldown
         setComboCount(getComboCount() + 1);
-        if (!hand.isOffHand()) {
-            lastAttacedWithItemStack = hand.itemStack();
+        if (!hand.isOffHand) {
+            lastAttacedWithItemStack = hand.itemStack;
         }
     }
 

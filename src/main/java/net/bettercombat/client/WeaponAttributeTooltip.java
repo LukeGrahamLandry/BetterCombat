@@ -26,8 +26,8 @@ public class WeaponAttributeTooltip {
                     Text line = lines.get(i);
                     Text content = line;
                     // Is this a line like "+1 Something"
-                    if (line instanceof TranslatableText translatableText) {
-                        String key = translatableText.getKey();
+                    if (line instanceof TranslatableText) {
+                        String key = ((TranslatableText) line).getKey();
                         if (key.startsWith(attributePrefix)) {
                             lastAttributeLine = i;
                         }
@@ -36,8 +36,8 @@ public class WeaponAttributeTooltip {
                         }
                     } else {
                         for(Text part: line.getSiblings()) {
-                            if (part instanceof TranslatableText translatableText) {
-                                if (translatableText.getKey().startsWith(attributePrefix)) {
+                            if (part instanceof TranslatableText) {
+                                if (((TranslatableText) part).getKey().startsWith(attributePrefix)) {
                                     lastAttributeLine = i;
                                     break;
                                 }

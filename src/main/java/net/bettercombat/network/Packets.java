@@ -11,9 +11,20 @@ import net.minecraft.util.Identifier;
 import java.util.List;
 
 public class Packets {
-    public record C2S_AttackRequest(int comboCount, boolean isSneaking, int[] entityIds) {
+    public static class C2S_AttackRequest {
+        public final int comboCount;
+        public final boolean isSneaking;
+        public final int[] entityIds;
         public C2S_AttackRequest(int comboCount, boolean isSneaking, List<Entity> entities) {
-            this(comboCount, isSneaking, convertEntityList(entities));
+            this.comboCount = comboCount;
+            this.isSneaking = isSneaking;
+            this.entityIds = convertEntityList(entities);
+        }
+
+        public C2S_AttackRequest(int comboCount, boolean isSneaking, int[] entities) {
+            this.comboCount = comboCount;
+            this.isSneaking = isSneaking;
+            this.entityIds = entities;
         }
 
         private static int[] convertEntityList(List<Entity> entities) {
@@ -42,7 +53,18 @@ public class Packets {
         }
     }
 
-    public record AttackAnimation(int playerId, boolean isOffHand, String animationName, float length) {
+    public static class AttackAnimation {
+        public final int playerId;
+        public final boolean isOffHand;
+        public final String animationName;
+        public final float length;
+
+        public AttackAnimation(int playerId, boolean isOffHand, String animationName, float length) {
+            this.playerId = playerId;
+            this.isOffHand = isOffHand;
+            this.animationName = animationName;
+            this.length = length;
+        }
         public static Identifier ID = new Identifier(BetterCombat.MODID, "attack_animation");
         public static String StopSymbol = "!STOP!";
         public static AttackAnimation stop(int playerId) { return new AttackAnimation(playerId, false, StopSymbol, 0); }
@@ -65,7 +87,25 @@ public class Packets {
         }
     }
 
-    public record AttackSound(double x, double y, double z, String soundId, float volume, float pitch, long seed) {
+    public static class AttackSound {
+        public final double x;
+        public final double y;
+        public final double z;
+        public final String soundId;
+        public final float volume;
+        public final float pitch;
+        public final long seed;
+        public AttackSound(double x, double y, double z, String soundId, float volume, float pitch, long seed){
+
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.soundId = soundId;
+            this.volume = volume;
+            this.pitch = pitch;
+            this.seed = seed;
+        }
+
         public static Identifier ID = new Identifier(BetterCombat.MODID, "attack_sound");
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();

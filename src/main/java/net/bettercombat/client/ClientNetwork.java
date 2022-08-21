@@ -17,12 +17,12 @@ public class ClientNetwork {
         ClientPlayNetworking.registerGlobalReceiver(Packets.AttackAnimation.ID, (client, handler, buf, responseSender) -> {
             final Packets.AttackAnimation packet = Packets.AttackAnimation.read(buf);
             client.execute(() -> {
-                Entity entity = client.world.getEntityById(packet.playerId());
+                Entity entity = client.world.getEntityById(packet.playerId);
                 if (entity instanceof PlayerEntity) {
-                    if (packet.animationName().equals(Packets.AttackAnimation.StopSymbol)) {
+                    if (packet.animationName.equals(Packets.AttackAnimation.StopSymbol)) {
                         ((PlayerAttackAnimatable)entity).stopAttackAnimation();
                     } else {
-                        ((PlayerAttackAnimatable)entity).playAttackAnimation(packet.animationName(), packet.isOffHand(), packet.length());
+                        ((PlayerAttackAnimatable)entity).playAttackAnimation(packet.animationName, packet.isOffHand, packet.length);
                     }
                 }
             });
@@ -36,16 +36,16 @@ public class ClientNetwork {
                         return;
                     }
 
-                    SoundEvent soundEvent = Registry.SOUND_EVENT.get(new Identifier(packet.soundId()));
+                    SoundEvent soundEvent = Registry.SOUND_EVENT.get(new Identifier(packet.soundId));
                     client.world.playSound(
                             client.player,
-                            packet.x(),
-                            packet.y(),
-                            packet.z(),
+                            packet.x,
+                            packet.y,
+                            packet.z,
                             soundEvent,
                             SoundCategory.PLAYERS,
-                            packet.volume(),
-                            packet.pitch()
+                            packet.volume,
+                            packet.pitch
                     );
                 } catch (Exception e) {
                     e.printStackTrace();

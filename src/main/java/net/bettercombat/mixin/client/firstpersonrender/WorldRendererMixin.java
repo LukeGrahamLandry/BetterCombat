@@ -48,8 +48,8 @@ public abstract class WorldRendererMixin {
         boolean isActive = false;
         if (currentAnimation.isPresent()) {
             isActive = currentAnimation.get().isActive();
-            if (currentAnimation.get() instanceof IExtendedAnimation extendedAnimation) {
-                isActive = extendedAnimation.isActiveInFirstPerson();
+            if (currentAnimation.get() instanceof IExtendedAnimation) {
+                isActive = ((IExtendedAnimation) currentAnimation.get()).isActiveInFirstPerson();
             }
         }
 

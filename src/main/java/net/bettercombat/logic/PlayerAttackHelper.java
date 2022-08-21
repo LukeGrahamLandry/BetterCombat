@@ -12,7 +12,7 @@ import static net.minecraft.entity.EquipmentSlot.MAINHAND;
 public class PlayerAttackHelper {
     public static float getDualWieldingAttackDamageMultiplier(PlayerEntity player, AttackHand hand) {
         return isDualWielding(player)
-                ? (hand.isOffHand()
+                ? (hand.isOffHand
                     ? BetterCombat.config.dual_wielding_off_hand_damage_multiplier
                     : BetterCombat.config.dual_wielding_main_hand_damage_multiplier)
                 : 1;
@@ -71,34 +71,28 @@ public class PlayerAttackHelper {
         if (condition == null) {
             return false;
         }
-        switch (condition) {
-            case DUAL_WIELDING_ANY -> {
-                return isDualWielding(player);
+        if (condition == WeaponAttributes.Condition.DUAL_WIELDING_ANY){
+            return isDualWielding(player);
+        } else if (condition == WeaponAttributes.Condition.DUAL_WIELDING_SAME){
+            return isDualWielding(player) &&
+                    (player.getMainHandStack().getItem() == player.getOffHandStack().getItem());
+        } else if (condition == WeaponAttributes.Condition.DUAL_WIELDING_SAME_CATEGORY) {
+            if (!isDualWielding(player)) {
+                return false;
             }
-            case DUAL_WIELDING_SAME -> {
-                return isDualWielding(player) &&
-                        (player.getMainHandStack().getItem() == player.getOffHandStack().getItem());
+            WeaponAttributes mainHandAttributes = WeaponRegistry.getAttributes(player.getMainHandStack());
+            WeaponAttributes offHandAttributes = WeaponRegistry.getAttributes(player.getOffHandStack());
+            if (mainHandAttributes.category() == null
+                    || mainHandAttributes.category().isEmpty()
+                    || offHandAttributes.category() == null
+                    || offHandAttributes.category().isEmpty()) {
+                return false;
             }
-            case DUAL_WIELDING_SAME_CATEGORY -> {
-                if (!isDualWielding(player)) {
-                    return false;
-                }
-                WeaponAttributes mainHandAttributes = WeaponRegistry.getAttributes(player.getMainHandStack());
-                WeaponAttributes offHandAttributes = WeaponRegistry.getAttributes(player.getOffHandStack());
-                if (mainHandAttributes.category() == null
-                        || mainHandAttributes.category().isEmpty()
-                        || offHandAttributes.category() == null
-                        || offHandAttributes.category().isEmpty()) {
-                    return false;
-                }
-                return mainHandAttributes.category().equals(offHandAttributes.category());
-            }
-            case MAIN_HAND_ONLY -> {
-                return !isOffHandAttack;
-            }
-            case OFF_HAND_ONLY -> {
-                return isOffHandAttack;
-            }
+            return mainHandAttributes.category().equals(offHandAttributes.category());
+        } else if (condition == WeaponAttributes.Condition.MAIN_HAND_ONLY) {
+            return !isOffHandAttack;
+        } else if (condition == WeaponAttributes.Condition.OFF_HAND_ONLY){
+            return isOffHandAttack;
         }
         return true;
     }

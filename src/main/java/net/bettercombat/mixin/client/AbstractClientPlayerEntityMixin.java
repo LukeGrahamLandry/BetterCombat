@@ -28,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 @Mixin(AbstractClientPlayerEntity.class)
@@ -141,30 +141,17 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             if (FirstPersonRenderHelper.isRenderingFirstPersonPlayerModel) {
                 float pitch = player.getPitch(1);
                 pitch = (float) Math.toRadians(pitch);
-                switch (partName) {
-                    case "rightArm", "leftArm" -> {
-                        rotationX = pitch;
-                    }
-                    default -> {
-                        return Optional.empty();
-                    }
-                }
+                if (!"rightArm".equals(partName) && !"leftArm".equals(partName)) return Optional.empty();
+                rotationX = pitch;
             } else {
                 float pitch = player.getPitch(1) / 2F;
                 pitch = (float) Math.toRadians(pitch);
-                switch (partName) {
-                    case "body" -> {
-                        rotationX = (-1F) * pitch;
-                    }
-                    case "rightArm", "leftArm" -> {
-                        rotationX = pitch;
-                    }
-                    case "rightLeg", "leftLeg" -> {
-                        rotationX = (-1F) * pitch;
-                    }
-                    default -> {
-                        return Optional.empty();
-                    }
+                if ("body".equals(partName) || "rightLeg".equals(partName) || "leftLeg".equals(partName)){
+                    rotationX = (-1F) * pitch;
+                } else if ("rightArm".equals(partName) || "leftArm".equals(partName)){
+                    rotationX = pitch;
+                } else {
+                    return Optional.empty();
                 }
             }
 
@@ -177,28 +164,9 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 
     private void updateAnimationByCurrentActivity(KeyframeAnimation.AnimationBuilder animation) {
         EntityPose pose = getPose();
-        switch (pose) {
-            case STANDING -> {
-            }
-            case FALL_FLYING -> {
-            }
-            case SLEEPING -> {
-            }
-            case SWIMMING -> {
-                configurBodyPart(animation.rightLeg, false, false);
-                configurBodyPart(animation.leftLeg, false, false);
-            }
-            case SPIN_ATTACK -> {
-            }
-            case CROUCHING -> {
-//                configurBodyPart(animation.head, true, false);
-//                configurBodyPart(animation.rightArm, true, false);
-//                configurBodyPart(animation.leftArm, true, false);
-//                configurBodyPart(animation.rightLeg, false, false);
-//                configurBodyPart(animation.leftLeg, false, false);
-            }
-            case DYING -> {
-            }
+        if (pose == EntityPose.STANDING){
+            configurBodyPart(animation.rightLeg, false, false);
+            configurBodyPart(animation.leftLeg, false, false);
         }
         if (isMounting()) {
             configurBodyPart(animation.rightLeg, false, false);

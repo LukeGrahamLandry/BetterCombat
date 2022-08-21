@@ -13,11 +13,15 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
 public class SoundHelper {
     private static Random rng = new Random();
+    private static float rand(float min, float max){
+        return min + rng.nextFloat() * (max - min);
+    }
 
     public static void playSound(ServerWorld world, Entity entity, WeaponAttributes.Sound sound) {
         if (sound == null) {
@@ -25,7 +29,7 @@ public class SoundHelper {
         }
         try {
             float pitch = (sound.randomness() > 0)
-                    ?  rng.nextFloat(sound.pitch() - sound.randomness(), sound.pitch() + sound.randomness())
+                    ?  rand(sound.pitch() - sound.randomness(), sound.pitch() + sound.randomness())
                     : sound.pitch();
             PacketByteBuf packet = new Packets.AttackSound(
                     entity.getX(),
@@ -58,33 +62,33 @@ public class SoundHelper {
     }
 
     public static void registerSounds() {
-        List<String> soundKeys = List.of(
-            "anchor_slam",
-            "axe_slash",
-            "claymore_swing",
-            "claymore_stab",
-            "claymore_slam",
-            "dagger_slash",
-            "double_axe_swing",
-            "fist_punch",
-            "glaive_slash_quick",
-            "glaive_slash_slow",
-            "hammer_slam",
-            "katana_slash",
-            "mace_slam",
-            "mace_slash",
-            "pickaxe_swing",
-            "rapier_slash",
-            "rapier_stab",
-            "scythe_slash",
-            "spear_stab",
-            "staff_slam",
-            "staff_slash",
-            "staff_spin",
-            "staff_stab",
-            "sickle_slash",
-            "sword_slash",
-            "wand_swing"
+        List<String> soundKeys = Arrays.asList(
+                "anchor_slam",
+                "axe_slash",
+                "claymore_swing",
+                "claymore_stab",
+                "claymore_slam",
+                "dagger_slash",
+                "double_axe_swing",
+                "fist_punch",
+                "glaive_slash_quick",
+                "glaive_slash_slow",
+                "hammer_slam",
+                "katana_slash",
+                "mace_slam",
+                "mace_slash",
+                "pickaxe_swing",
+                "rapier_slash",
+                "rapier_stab",
+                "scythe_slash",
+                "spear_stab",
+                "staff_slam",
+                "staff_slash",
+                "staff_spin",
+                "staff_stab",
+                "sickle_slash",
+                "sword_slash",
+                "wand_swing"
         );
         for (String soundKey: soundKeys) {
             Identifier soundId = new Identifier(BetterCombat.MODID, soundKey);

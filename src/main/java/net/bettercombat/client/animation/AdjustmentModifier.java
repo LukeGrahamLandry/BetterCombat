@@ -9,10 +9,15 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public final class AdjustmentModifier extends AbstractModifier {
-    public record PartModifier(
-            Vec3f rotation,
-            Vec3f offset
-    ) {};
+    public static class PartModifier{
+        private final Vec3f rotation;
+        private final Vec3f offset;
+
+        public PartModifier(Vec3f rotation, Vec3f offset){
+            this.rotation = rotation;
+            this.offset = offset;
+        }
+    }
 
     public boolean enabled = true;
 
@@ -24,7 +29,8 @@ public final class AdjustmentModifier extends AbstractModifier {
 
     private float getFadeIn(float delta) {
         float fadeIn = 1;
-        if(this.getAnim() instanceof KeyframeAnimationPlayer player) {
+        if(this.getAnim() instanceof KeyframeAnimationPlayer) {
+            KeyframeAnimationPlayer player = (KeyframeAnimationPlayer) this.getAnim();
             float currentTick = player.getTick() + delta;
             fadeIn = currentTick / (float) player.getData().beginTick;
             fadeIn = Math.min(fadeIn, 1F);
@@ -34,7 +40,8 @@ public final class AdjustmentModifier extends AbstractModifier {
 
     private float getFadeOut(float delta) {
         float fadeOut = 1;
-        if(this.getAnim() instanceof KeyframeAnimationPlayer player) {
+        if(this.getAnim() instanceof KeyframeAnimationPlayer) {
+            KeyframeAnimationPlayer player = (KeyframeAnimationPlayer) this.getAnim();
             float currentTick = player.getTick() + delta;
 
             float position = (-1F) * (currentTick - player.getData().stopTick);
@@ -67,16 +74,10 @@ public final class AdjustmentModifier extends AbstractModifier {
     }
 
     private Vec3f transformVector(Vec3f vector, TransformType type, PartModifier partModifier, float fade) {
-        switch (type) {
-            case POSITION -> {
-                return vector.add(partModifier.offset);
-            }
-            case ROTATION -> {
-                 return vector.add(partModifier.rotation.scale(fade));
-            }
-            case BEND -> {
-                // Nothing to do here...
-            }
+        if (type == TransformType.POSITION){
+            return vector.add(partModifier.offset);
+        } else if (type == TransformType.ROTATION) {
+            return vector.add(partModifier.rotation.scale(fade));
         }
         return vector;
     }

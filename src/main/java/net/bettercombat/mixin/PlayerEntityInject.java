@@ -161,7 +161,7 @@ public abstract class PlayerEntityInject implements PlayerAttackProperties {
                 return instance.getMainHandStack();
             }
         }
-        return hand.itemStack();
+        return hand.itemStack;
     }
 
     @Redirect(method = "attack", at = @At(value = "INVOKE",
@@ -180,7 +180,7 @@ public abstract class PlayerEntityInject implements PlayerAttackProperties {
             instance.setStackInHand(handArg, itemStack);
             return;
         }
-        Hand redirectedHand = hand.isOffHand() ? Hand.OFF_HAND : Hand.MAIN_HAND;
+        Hand redirectedHand = hand.isOffHand ? Hand.OFF_HAND : Hand.MAIN_HAND;
         instance.setStackInHand(redirectedHand, itemStack);
     }
 }

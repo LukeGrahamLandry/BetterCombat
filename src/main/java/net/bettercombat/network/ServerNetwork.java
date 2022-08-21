@@ -53,7 +53,7 @@ public class ServerNetwork {
                 return;
             }
             final Packets.AttackAnimation packet = Packets.AttackAnimation.read(buf);
-            final PacketByteBuf forwardBuffer = new Packets.AttackAnimation(player.getEntityId(), packet.isOffHand(), packet.animationName(), packet.length()).write();
+            final PacketByteBuf forwardBuffer = new Packets.AttackAnimation(player.getEntityId(), packet.isOffHand, packet.animationName, packet.length).write();
             PlayerLookup.tracking(player).forEach(serverPlayer -> {
                 try {
                     if (serverPlayer.getEntityId() != player.getEntityId() && ServerPlayNetworking.canSend(serverPlayer, Packets.AttackAnimation.ID)) {
@@ -72,19 +72,19 @@ public class ServerNetwork {
                 return;
             }
             final Packets.C2S_AttackRequest request = Packets.C2S_AttackRequest.read(buf);
-            final AttackHand hand = PlayerAttackHelper.getCurrentAttack(player, request.comboCount());
+            final AttackHand hand = PlayerAttackHelper.getCurrentAttack(player, request.comboCount);
             if (hand == null) {
                 LOGGER.error("Server handling Packets.C2S_AttackRequest - No current attack hand!");
-                LOGGER.error("Combo count: " + request.comboCount() + " is dual wielding: " + PlayerAttackHelper.isDualWielding(player));
+                LOGGER.error("Combo count: " + request.comboCount + " is dual wielding: " + PlayerAttackHelper.isDualWielding(player));
                 LOGGER.error("Main-hand stack: " + player.getMainHandStack());
                 LOGGER.error("Off-hand stack: " + player.getOffHandStack());
                 return;
             }
-            final WeaponAttributes.Attack attack = hand.attack();
-            final WeaponAttributes attributes = hand.attributes();
+            final WeaponAttributes.Attack attack = hand.attack;
+            final WeaponAttributes attributes = hand.attributes;
             final boolean useVanillaPacket = Packets.C2S_AttackRequest.UseVanillaPacket;
             world.getServer().execute(() -> {
-                ((PlayerAttackProperties)player).setComboCount(request.comboCount());
+                ((PlayerAttackProperties)player).setComboCount(request.comboCount);
                 Multimap<EntityAttribute, EntityAttributeModifier> comboAttributes = null;
                 Multimap<EntityAttribute, EntityAttributeModifier> dualWieldingAttributes = null;
                 double range = 18.0;
@@ -107,7 +107,7 @@ public class ServerNetwork {
                         player.getAttributes().addTemporaryModifiers(dualWieldingAttributes);
                     }
 
-                    if (hand.isOffHand()) {
+                    if (hand.isOffHand) {
                         PlayerAttackHelper.setAttributesForOffHandAttack(player, true);
                     }
 
@@ -116,10 +116,10 @@ public class ServerNetwork {
 
                 int lastAttackedTicks = ((LivingEntityAccessor)player).getLastAttackedTicks();
                 if (!useVanillaPacket) {
-                    player.setSneaking(request.isSneaking());
+                    player.setSneaking(request.isSneaking);
                 }
 
-                for (int entityId: request.entityIds()) {
+                for (int entityId: request.entityIds) {
                     // getEntityById(entityId);
                     Entity entity = world.getEntityById(entityId); // Get LivingEntity or DragonPart
 
@@ -134,7 +134,7 @@ public class ServerNetwork {
                     ((LivingEntityAccessor) player).setLastAttackedTicks(lastAttackedTicks);
                     // System.out.println("Server - Attacking hand: " + (hand.isOffHand() ? "offhand" : "mainhand") + " CD: " + player.getAttackCooldownProgress(0));
                     if (useVanillaPacket) {
-                        PlayerInteractEntityC2SPacket vanillaAttackPacket = new PlayerInteractEntityC2SPacket(entity, request.isSneaking());
+                        PlayerInteractEntityC2SPacket vanillaAttackPacket = new PlayerInteractEntityC2SPacket(entity, request.isSneaking);
                         handler.onPlayerInteractEntity(vanillaAttackPacket);
                     } else {
                         if (player.squaredDistanceTo(entity) < range * BetterCombat.config.target_search_range_multiplier) {
@@ -154,7 +154,7 @@ public class ServerNetwork {
 
                 if (comboAttributes != null) {
                     player.getAttributes().removeModifiers(comboAttributes);
-                    if (hand.isOffHand()) {
+                    if (hand.isOffHand) {
                         PlayerAttackHelper.setAttributesForOffHandAttack(player, false);
                     }
                 }
