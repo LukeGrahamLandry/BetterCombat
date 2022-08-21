@@ -8,6 +8,7 @@ import net.bettercombat.config.ServerConfig;
 import net.bettercombat.config.ServerConfigWrapper;
 import net.bettercombat.logic.WeaponAttributesFallback;
 import net.bettercombat.logic.WeaponRegistry;
+import net.bettercombat.mixin.MinecraftServerAccessor;
 import net.bettercombat.network.ServerNetwork;
 import net.bettercombat.utils.SoundHelper;
 import net.fabricmc.api.ModInitializer;
@@ -34,7 +35,8 @@ public class BetterCombat implements ModInitializer {
 
         ServerNetwork.initializeHandlers();
         ServerLifecycleEvents.SERVER_STARTED.register((minecraftServer) -> {
-            WeaponRegistry.loadAttributes(minecraftServer.getResourceManager());
+            var resourceManger = ((MinecraftServerAccessor) minecraftServer).getServerResourceManager().getResourceManager();
+            WeaponRegistry.loadAttributes(resourceManger);
             if (config.fallback_compatibility_enabled) {
                 WeaponAttributesFallback.initialize();
             }

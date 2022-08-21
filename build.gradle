@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.12-SNAPSHOT'
+    id 'fabric-loom' version '0.10-SNAPSHOT'
     id 'maven-publish'
     id 'com.matthewprenger.cursegradle' version '1.4.0'
     id "com.modrinth.minotaur" version "2.+"
@@ -45,8 +45,7 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
 
-    modApi include("com.github.ZsoltMolnarrr:TinyConfig:1.0.2")
-    modImplementation include("dev.kosmx.player-anim:player-animation-lib-fabric:0.0.5")
+    modImplementation include("dev.kosmx.player-anim:player-animation-lib-fabric:0.3.0")
     // modImplementation files("player-animation-lib-0.0.4.jar")
 }
 

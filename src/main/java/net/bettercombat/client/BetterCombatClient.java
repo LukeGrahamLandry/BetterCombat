@@ -12,12 +12,13 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.object.builder.v1.client.model.FabricModelPredicateProviderRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
+import org.lwjgl.glfw.GLFW;
 
 @Environment(EnvType.CLIENT)
 public class BetterCombatClient implements ClientModInitializer {
@@ -43,7 +44,7 @@ public class BetterCombatClient implements ClientModInitializer {
             FirstPersonRenderHelper.isFeatureEnabled = false;
         }
 
-        ModelPredicateProviderRegistry.register(new Identifier(BetterCombat.MODID, "loaded"), (stack, world, entity, seed) -> {
+        FabricModelPredicateProviderRegistry.register(new Identifier(BetterCombat.MODID, "loaded"), (stack, world, entity) -> {
             return 1.0F;
         });
     }
@@ -52,7 +53,7 @@ public class BetterCombatClient implements ClientModInitializer {
         feintKeyBinding = new KeyBinding(
                 "keybinds.bettercombat.feint",
                 InputUtil.Type.KEYSYM,
-                InputUtil.GLFW_KEY_R,
+                GLFW.GLFW_KEY_R,
                 "Better Combat");
         KeyBindingHelper.registerKeyBinding(feintKeyBinding);
         toggleMineKeyBinding = new KeyBinding(

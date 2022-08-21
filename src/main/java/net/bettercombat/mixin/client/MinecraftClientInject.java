@@ -65,7 +65,7 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
         HudRenderCallback.EVENT.register((matrices, f) -> {
             if (textToRender != null && !textToRender.isEmpty()) {
                 var client = MinecraftClient.getInstance();
-                var textRenderer = client.inGameHud.getTextRenderer();
+                var textRenderer = client.inGameHud.getFontRenderer();
                 var scaledWidth = client.getWindow().getScaledWidth();
                 var scaledHeight = client.getWindow().getScaledHeight();
 
@@ -95,7 +95,7 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
 
     // Press to attack
     @Inject(method = "doAttack", at = @At("HEAD"), cancellable = true)
-    private void pre_doAttack(CallbackInfoReturnable<Boolean> info) {
+    private void pre_doAttack(CallbackInfo info) {
         MinecraftClient client = thisClient();
         WeaponAttributes attributes = WeaponRegistry.getAttributes(client.player.getMainHandStack());
         if (attributes != null) {
@@ -104,7 +104,6 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
                 return;
             }
             startUpswing(attributes);
-            info.setReturnValue(false);
             info.cancel();
         }
     }
@@ -115,7 +114,7 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
         MinecraftClient client = thisClient();
         WeaponAttributes attributes = WeaponRegistry.getAttributes(client.player.getMainHandStack());
         if (attributes != null) {
-            boolean isPressed = client.options.attackKey.isPressed();
+            boolean isPressed = client.options.keyAttack.isPressed();
             if(isPressed && !isHoldingAttackInput) {
                 if (isTargetingMineableBlock() || isHarvesting) {
                     isHarvesting = true;
@@ -203,7 +202,7 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
         ((PlayerAttackAnimatable) player).playAttackAnimation(animationName, isOffHand, attackCooldownTicks);
         ClientPlayNetworking.send(
                 Packets.AttackAnimation.ID,
-                new Packets.AttackAnimation(player.getId(), isOffHand, animationName, attackCooldownTicks).write());
+                new Packets.AttackAnimation(player.getEntityId(), isOffHand, animationName, attackCooldownTicks).write());
     }
 
     private void feintIfNeeded() {
@@ -212,7 +211,7 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
             ((PlayerAttackAnimatable) player).stopAttackAnimation();
             ClientPlayNetworking.send(
                     Packets.AttackAnimation.ID,
-                    Packets.AttackAnimation.stop(player.getId()).write());
+                    Packets.AttackAnimation.stop(player.getEntityId()).write());
             upswingTicks = 0;
             upswingStack = null;
         }

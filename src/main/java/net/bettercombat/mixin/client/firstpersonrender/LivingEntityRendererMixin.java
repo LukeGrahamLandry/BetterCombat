@@ -7,7 +7,7 @@ import net.bettercombat.client.animation.IExtendedAnimation;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
-import net.minecraft.client.render.entity.feature.PlayerHeldItemFeatureRenderer;
+import net.minecraft.client.render.entity.feature.HeldItemFeatureRenderer;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
 import org.objectweb.asm.Opcodes;
@@ -57,7 +57,7 @@ public class LivingEntityRendererMixin {
         if (FirstPersonRenderHelper.isFeatureEnabled && FirstPersonRenderHelper.isRenderingFirstPersonPlayerModel) {
             return features.stream()
                     .filter( item -> {
-                        return item instanceof PlayerHeldItemFeatureRenderer;
+                        return item instanceof HeldItemFeatureRenderer;
                     }).collect(Collectors.toList());
         } else {
             return features;

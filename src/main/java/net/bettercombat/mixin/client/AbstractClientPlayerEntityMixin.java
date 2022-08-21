@@ -17,7 +17,6 @@ import net.bettercombat.mixin.LivingEntityAccessor;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.util.Arm;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -41,12 +40,12 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 
     private PoseData lastPose;
 
-    public AbstractClientPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile, @org.jetbrains.annotations.Nullable PlayerPublicKey publicKey) {
-        super(world, pos, yaw, gameProfile, publicKey);
+    public AbstractClientPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
+        super(world, pos, yaw, gameProfile);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void postInit(ClientWorld world, GameProfile profile, PlayerPublicKey publicKey, CallbackInfo ci) {
+    private void postInit(ClientWorld world, GameProfile profile, CallbackInfo ci) {
         var stack = ((IAnimatedPlayer) this).getAnimationStack();
         stack.addAnimLayer(1, poseContainer);
         stack.addAnimLayer(2000, containerA.base);
@@ -137,7 +136,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             float offsetZ = 0;
 
             if (FirstPersonRenderHelper.isRenderingFirstPersonPlayerModel) {
-                var pitch = player.getPitch();
+                var pitch = player.getPitch(1);
                 pitch = (float) Math.toRadians(pitch);
                 switch (partName) {
                     case "rightArm", "leftArm" -> {
@@ -148,7 +147,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
                     }
                 }
             } else {
-                var pitch = player.getPitch() / 2F;
+                var pitch = player.getPitch(1) / 2F;
                 pitch = (float) Math.toRadians(pitch);
                 switch (partName) {
                     case "body" -> {
@@ -194,8 +193,6 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 //                configurBodyPart(animation.leftArm, true, false);
 //                configurBodyPart(animation.rightLeg, false, false);
 //                configurBodyPart(animation.leftLeg, false, false);
-            }
-            case LONG_JUMPING -> {
             }
             case DYING -> {
             }

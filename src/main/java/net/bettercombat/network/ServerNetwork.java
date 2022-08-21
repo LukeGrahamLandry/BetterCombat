@@ -3,7 +3,6 @@ package net.bettercombat.network;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import com.mojang.logging.LogUtils;
 import net.bettercombat.BetterCombat;
 import net.bettercombat.logic.PlayerAttackHelper;
 import net.bettercombat.logic.PlayerAttackProperties;
@@ -27,12 +26,14 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import org.slf4j.Logger;
+import net.minecraft.text.TranslatableText;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.UUID;
 
 public class ServerNetwork {
-    static final Logger LOGGER = LogUtils.getLogger();
+    static final Logger LOGGER = LogManager.getLogger();
 
     private static PacketByteBuf configSerialized = PacketByteBufs.create();
 
@@ -50,10 +51,10 @@ public class ServerNetwork {
                 return;
             }
             final var packet = Packets.AttackAnimation.read(buf);
-            final var forwardBuffer = new Packets.AttackAnimation(player.getId(), packet.isOffHand(), packet.animationName(), packet.length()).write();
+            final var forwardBuffer = new Packets.AttackAnimation(player.getEntityId(), packet.isOffHand(), packet.animationName(), packet.length()).write();
             PlayerLookup.tracking(player).forEach(serverPlayer -> {
                 try {
-                    if (serverPlayer.getId() != player.getId() && ServerPlayNetworking.canSend(serverPlayer, Packets.AttackAnimation.ID)) {
+                    if (serverPlayer.getEntityId() != player.getEntityId() && ServerPlayNetworking.canSend(serverPlayer, Packets.AttackAnimation.ID)) {
                         ServerPlayNetworking.send(serverPlayer, Packets.AttackAnimation.ID, forwardBuffer);
                     }
                 } catch (Exception e){
@@ -80,7 +81,7 @@ public class ServerNetwork {
             final var attack = hand.attack();
             final var attributes = hand.attributes();
             final boolean useVanillaPacket = Packets.C2S_AttackRequest.UseVanillaPacket;
-            world.getServer().executeSync(() -> {
+            world.getServer().execute(() -> {
                 ((PlayerAttackProperties)player).setComboCount(request.comboCount());
                 Multimap<EntityAttribute, EntityAttributeModifier> comboAttributes = null;
                 Multimap<EntityAttribute, EntityAttributeModifier> dualWieldingAttributes = null;
@@ -118,7 +119,7 @@ public class ServerNetwork {
 
                 for (int entityId: request.entityIds()) {
                     // getEntityById(entityId);
-                    Entity entity = world.getDragonPart(entityId); // Get LivingEntity or DragonPart
+                    Entity entity = world.getEntityById(entityId); // Get LivingEntity or DragonPart
 
                     if (entity == null
                             || (!BetterCombat.config.allow_attacking_mount && entity.equals(player.getVehicle()))
@@ -131,12 +132,12 @@ public class ServerNetwork {
                     ((LivingEntityAccessor) player).setLastAttackedTicks(lastAttackedTicks);
                     // System.out.println("Server - Attacking hand: " + (hand.isOffHand() ? "offhand" : "mainhand") + " CD: " + player.getAttackCooldownProgress(0));
                     if (useVanillaPacket) {
-                        PlayerInteractEntityC2SPacket vanillaAttackPacket = PlayerInteractEntityC2SPacket.attack(entity, request.isSneaking());
+                        PlayerInteractEntityC2SPacket vanillaAttackPacket = new PlayerInteractEntityC2SPacket(entity, request.isSneaking());
                         handler.onPlayerInteractEntity(vanillaAttackPacket);
                     } else {
                         if (player.squaredDistanceTo(entity) < range * BetterCombat.config.target_search_range_multiplier) {
                             if (entity instanceof ItemEntity || entity instanceof ExperienceOrbEntity || entity instanceof PersistentProjectileEntity || entity == player) {
-                                handler.disconnect(Text.translatable("multiplayer.disconnect.invalid_entity_attacked"));
+                                handler.disconnect(new TranslatableText("multiplayer.disconnect.invalid_entity_attacked"));
                                 LOGGER.warn("Player {} tried to attack an invalid entity", (Object)player.getName().getString());
                                 return;
                             }

@@ -37,7 +37,8 @@ public class SoundHelper {
                     .write();
 
             var soundEvent = Registry.SOUND_EVENT.get(new Identifier(sound.id()));
-            var distance = soundEvent.getDistanceToTravel(sound.volume());
+            // TODO: what was SoundEvent#getDistanceToTravel in 1.16.5
+            var distance = 5; // soundEvent.getDistanceToTravel(sound.volume());
             var origin = new Vec3d(entity.getX(), entity.getY(), entity.getZ());
             PlayerLookup.around(world, origin, distance).forEach(serverPlayer -> {
                 var channel = Packets.AttackSound.ID;

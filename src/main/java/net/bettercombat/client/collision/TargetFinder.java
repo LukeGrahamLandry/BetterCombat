@@ -27,7 +27,7 @@ public class TargetFinder {
 
         boolean isSpinAttack = attack.angle() > 180;
         Vec3d size = WeaponHitBoxes.createHitbox(attack.hitbox(), attackRange, isSpinAttack);
-        var obb = new OrientedBoundingBox(origin, size, player.getPitch(), player.getYaw());
+        var obb = new OrientedBoundingBox(origin, size, player.getPitch(1), player.getYaw(1));
         if (!isSpinAttack) {
             obb = obb.offsetAlongAxisZ(size.z / 2F);
         }
@@ -46,14 +46,14 @@ public class TargetFinder {
 
     public static Vec3d getInitialTracingPoint(PlayerEntity player) {
         double shoulderHeight = player.getHeight() * 0.2 * player.getScaleFactor();
-        return player.getEyePos().subtract(0, shoulderHeight, 0);
+        return player.getCameraPosVec(1).subtract(0, shoulderHeight, 0);
     }
 
     public static List<Entity> getInitialTargets(PlayerEntity player, Entity cursorTarget, double attackRange) {
         Box box = player.getBoundingBox().expand(attackRange * BetterCombat.config.target_search_range_multiplier + 1.0);
         List<Entity> entities = player
                 .world
-                .getOtherEntities(player, box, entity ->  !entity.isSpectator() && entity.canHit())
+                .getOtherEntities(player, box, entity ->  !entity.isSpectator() && !entity.isInvulnerable()) // TODO: what was entity.canHit in 1.16
                 .stream()
                 .filter(entity -> entity != player
                         && entity != cursorTarget

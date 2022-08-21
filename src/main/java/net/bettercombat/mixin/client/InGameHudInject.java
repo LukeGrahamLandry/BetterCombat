@@ -27,7 +27,7 @@ public abstract class InGameHudInject {
             float green = ((float) ((color >> 8) & 0xFF)) / 255F;
             float blue = ((float) (color & 0xFF)) / 255F;
             float alpha = 0.5F;
-            RenderSystem.setShaderColor(red, green, blue, alpha);
+            RenderSystem.color4f(red, green, blue, alpha);
         }
     }
 }

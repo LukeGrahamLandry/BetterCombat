@@ -19,7 +19,7 @@ public class Packets {
         private static int[] convertEntityList(List<Entity> entities) {
             int[] ids = new int[entities.size()];
             for(int i = 0; i < entities.size(); i++) {
-                ids[i] = entities.get(i).getId();
+                ids[i] = entities.get(i).getEntityId();
             }
             return ids;
         }

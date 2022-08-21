@@ -73,13 +73,15 @@ public class ColliderDebugRenderer {
 
     private void drawOutline(OrientedBoundingBox obb, List<OrientedBoundingBox> otherObbs, boolean collides) {
         RenderSystem.enableDepthTest();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+        // RenderSystem.setShader(GameRenderer::getPositionColorShader);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
         RenderSystem.disableTexture();
         RenderSystem.disableBlend();
         RenderSystem.lineWidth(1.0f);
-        bufferBuilder.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
+        // magic number is VertexFormat.DrawMode.DEBUG_LINE_STRIP.glMode in 1.19
+        bufferBuilder.begin(3, VertexFormats.POSITION_COLOR);
 
         if (collides) {
             outlineOBB(obb, bufferBuilder,

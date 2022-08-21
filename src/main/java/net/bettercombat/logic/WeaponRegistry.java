@@ -3,7 +3,6 @@ package net.bettercombat.logic;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
-import com.mojang.logging.LogUtils;
 import net.bettercombat.BetterCombat;
 import net.bettercombat.api.AttributesContainer;
 import net.bettercombat.api.WeaponAttributes;
@@ -14,8 +13,10 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 public class WeaponRegistry {
-    static final Logger LOGGER = LogUtils.getLogger();
+    static final Logger LOGGER = LogManager.getLogger();
     static Map<Identifier, WeaponAttributes> registrations = new HashMap();
     static Map<Identifier, AttributesContainer> containers = new HashMap();
 
@@ -65,10 +66,9 @@ public class WeaponRegistry {
         Type fileFormat = new TypeToken<AttributesContainer>() {}.getType();
         Map<Identifier, AttributesContainer> containers = new HashMap();
         // Reading all attribute files
-        for (var entry : resourceManager.findResources("weapon_attributes", fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
-            var identifier = entry.getKey();
-            var resource = entry.getValue();
+        for (var identifier : resourceManager.findResources("weapon_attributes", fileName -> new File(fileName).getPath().endsWith(".json"))) {
             try {
+                var resource = resourceManager.getResource(identifier);
                 // System.out.println("Checking resource: " + identifier);
                 JsonReader reader = new JsonReader(new InputStreamReader(resource.getInputStream()));
                 AttributesContainer container = gson.fromJson(reader, fileFormat);
