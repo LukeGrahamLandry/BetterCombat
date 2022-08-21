@@ -47,7 +47,7 @@ public final class AttributesContainer {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (AttributesContainer) obj;
+        AttributesContainer that = (AttributesContainer) obj;
         return Objects.equals(this.parent, that.parent) &&
                 Objects.equals(this.attributes, that.attributes);
     }

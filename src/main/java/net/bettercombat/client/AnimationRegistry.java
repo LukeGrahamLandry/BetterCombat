@@ -2,7 +2,9 @@ package net.bettercombat.client;
 
 import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import dev.kosmx.playerAnim.core.data.gson.AnimationSerializing;
+import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,14 +18,14 @@ public class AnimationRegistry {
     public static Map<String, KeyframeAnimation> animations = new HashMap<>();
 
     public static void load(ResourceManager resourceManager) {
-        var dataFolder = "attack_animations";
-        for (var identifier : resourceManager.findResources(dataFolder, fileName -> new File(fileName).getPath().endsWith(".json"))) {
+        String dataFolder = "attack_animations";
+        for (Identifier identifier : resourceManager.findResources(dataFolder, fileName -> new File(fileName).getPath().endsWith(".json"))) {
             try {
-                var resource = resourceManager.getResource(identifier);
+                Resource resource = resourceManager.getResource(identifier);
                 List<KeyframeAnimation> readAnimations = AnimationSerializing.deserializeAnimation(resource.getInputStream());
                 KeyframeAnimation animation = readAnimations.get(0);
 
-                var id = identifier
+                String id = identifier
                         .toString()
                         .replace(dataFolder + "/", "");
                 id = id.substring(0, id.lastIndexOf('.'));

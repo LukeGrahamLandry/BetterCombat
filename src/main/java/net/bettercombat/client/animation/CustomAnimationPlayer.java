@@ -14,7 +14,7 @@ public class CustomAnimationPlayer extends KeyframeAnimationPlayer implements IE
     }
 
     public boolean isWindingDown() {
-        var windDownStart = getData().endTick + ((getData().stopTick - getData().endTick) / 4);
+        int windDownStart = getData().endTick + ((getData().stopTick - getData().endTick) / 4);
         return (getTick() > windDownStart);
     }
 

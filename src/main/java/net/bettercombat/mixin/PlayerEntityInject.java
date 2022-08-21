@@ -3,7 +3,9 @@ package net.bettercombat.mixin;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import net.bettercombat.BetterCombat;
+import net.bettercombat.api.WeaponAttributes;
 import net.bettercombat.client.PlayerAttackAnimatable;
+import net.bettercombat.logic.AttackHand;
 import net.bettercombat.logic.PlayerAttackHelper;
 import net.bettercombat.logic.PlayerAttackProperties;
 import net.bettercombat.logic.WeaponRegistry;
@@ -38,7 +40,7 @@ public abstract class PlayerEntityInject implements PlayerAttackProperties {
 
     @Inject(method = "tick", at = @At("TAIL"))
     public void post_Tick(CallbackInfo ci) {
-        var instance = (Object)this;
+        Object instance = (Object)this;
         if (((PlayerEntity)instance).world.isClient()) {
             ((PlayerAttackAnimatable) this).updateAnimationsOnTick();
         }
@@ -49,8 +51,8 @@ public abstract class PlayerEntityInject implements PlayerAttackProperties {
 
     @ModifyVariable(method = "attack", at = @At("STORE"), ordinal = 3)
     private boolean disableSweeping(boolean value) {
-        var player = ((PlayerEntity) ((Object)this) );
-        var currentHand = PlayerAttackHelper.getCurrentAttack(player, comboCount);
+        PlayerEntity player = ((PlayerEntity) ((Object)this) );
+        AttackHand currentHand = PlayerAttackHelper.getCurrentAttack(player, comboCount);
         if (currentHand != null) {
             return false;
         }
@@ -82,16 +84,16 @@ public abstract class PlayerEntityInject implements PlayerAttackProperties {
 
     @Inject(method = "getEquippedStack", at = @At("HEAD"), cancellable = true)
     public void getEquippedStack_Pre(EquipmentSlot slot, CallbackInfoReturnable<ItemStack> cir) {
-        var mainHandHasTwoHanded = false;
-        var mainHandStack = ((PlayerEntityAccessor) this).getInventory().getMainHandStack();
-        var mainHandAttributes = WeaponRegistry.getAttributes(mainHandStack);
+        boolean mainHandHasTwoHanded = false;
+        ItemStack mainHandStack = ((PlayerEntityAccessor) this).getInventory().getMainHandStack();
+        WeaponAttributes mainHandAttributes = WeaponRegistry.getAttributes(mainHandStack);
         if (mainHandAttributes != null && mainHandAttributes.isTwoHanded()) {
             mainHandHasTwoHanded = true;
         }
 
-        var offHandHasTwoHanded = false;
-        var offHandStack = ((PlayerEntityAccessor)this).getInventory().offHand.get(0);
-        var offHandAttributes = WeaponRegistry.getAttributes(offHandStack);
+        boolean offHandHasTwoHanded = false;
+        ItemStack offHandStack = ((PlayerEntityAccessor)this).getInventory().offHand.get(0);
+        WeaponAttributes offHandAttributes = WeaponRegistry.getAttributes(offHandStack);
         if(offHandAttributes != null && offHandAttributes.isTwoHanded()) {
             offHandHasTwoHanded = true;
         }
@@ -111,9 +113,9 @@ public abstract class PlayerEntityInject implements PlayerAttackProperties {
     private static UUID dualWieldingSpeedModifierId = UUID.fromString("6b364332-0dc4-11ed-861d-0242ac120002");
 
     private void updateDualWieldingSpeedBoost() {
-        var player = ((PlayerEntity) ((Object)this));
-        var newState = PlayerAttackHelper.isDualWielding(player);
-        var currentState = dualWieldingAttributeMap != null;
+        PlayerEntity player = ((PlayerEntity) ((Object)this));
+        boolean newState = PlayerAttackHelper.isDualWielding(player);
+        boolean currentState = dualWieldingAttributeMap != null;
         if (newState != currentState) {
             if(newState) {
                 // Just started dual wielding
@@ -150,9 +152,9 @@ public abstract class PlayerEntityInject implements PlayerAttackProperties {
             // Vanilla behaviour
             return instance.getMainHandStack();
         }
-        var hand = PlayerAttackHelper.getCurrentAttack(instance, comboCount);
+        AttackHand hand = PlayerAttackHelper.getCurrentAttack(instance, comboCount);
         if (hand == null) {
-            var isOffHand = PlayerAttackHelper.shouldAttackWithOffHand(instance, comboCount);
+            boolean isOffHand = PlayerAttackHelper.shouldAttackWithOffHand(instance, comboCount);
             if (isOffHand) {
                 return ItemStack.EMPTY;
             } else {
@@ -173,12 +175,12 @@ public abstract class PlayerEntityInject implements PlayerAttackProperties {
             instance.setStackInHand(handArg, itemStack);
         }
         // `handArg` argument is always `MAIN`, we can ignore it
-        var hand = PlayerAttackHelper.getCurrentAttack(instance, comboCount);
+        AttackHand hand = PlayerAttackHelper.getCurrentAttack(instance, comboCount);
         if (hand == null) {
             instance.setStackInHand(handArg, itemStack);
             return;
         }
-        var redirectedHand = hand.isOffHand() ? Hand.OFF_HAND : Hand.MAIN_HAND;
+        Hand redirectedHand = hand.isOffHand() ? Hand.OFF_HAND : Hand.MAIN_HAND;
         instance.setStackInHand(redirectedHand, itemStack);
     }
 }

@@ -5,12 +5,14 @@ import net.bettercombat.api.WeaponAttributes;
 import net.bettercombat.client.MinecraftClientExtension;
 import net.bettercombat.client.collision.OrientedBoundingBox;
 import net.bettercombat.client.collision.TargetFinder;
+import net.bettercombat.logic.AttackHand;
 import net.bettercombat.logic.PlayerAttackHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.debug.DebugRenderer;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
@@ -40,9 +42,9 @@ public class ColliderDebugRenderer {
         if (client.player.getMainHandStack() == null) {
             return;
         }
-        var extendedClient = (MinecraftClientExtension)client;
-        var comboCount = extendedClient.getComboCount();
-        var hand = PlayerAttackHelper.getCurrentAttack(client.player, comboCount);
+        MinecraftClientExtension extendedClient = (MinecraftClientExtension)client;
+        int comboCount = extendedClient.getComboCount();
+        AttackHand hand = PlayerAttackHelper.getCurrentAttack(client.player, comboCount);
         if (hand == null) {
             return;
         }
@@ -50,15 +52,15 @@ public class ColliderDebugRenderer {
         if (attributes == null) {
             return;
         }
-        var cursorTarget = extendedClient.getCursorTarget();
-        var target = TargetFinder.findAttackTargetResult(
+        Entity cursorTarget = extendedClient.getCursorTarget();
+        TargetFinder.TargetResult target = TargetFinder.findAttackTargetResult(
                 player,
                 cursorTarget,
                 hand.attack(),
                 attributes.attackRange());
         boolean collides = target.entities.size() > 0;
         Vec3d cameraOffset = camera.getPos().negate();
-        var obb = target.obb.
+        OrientedBoundingBox obb = target.obb.
                 copy()
                 .offset(cameraOffset)
                 .updateVertex();

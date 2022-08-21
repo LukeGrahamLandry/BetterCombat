@@ -17,6 +17,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
@@ -35,7 +36,7 @@ public class BetterCombatClient implements ClientModInitializer {
         ClientNetwork.initializeHandlers();
         WeaponAttributeTooltip.initialize();
         ClientLifecycleEvents.CLIENT_STARTED.register((client) -> {
-            var resourceManager = MinecraftClient.getInstance().getResourceManager();
+            ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
             AnimationRegistry.load(resourceManager);
         });
         registerKeyBindings();

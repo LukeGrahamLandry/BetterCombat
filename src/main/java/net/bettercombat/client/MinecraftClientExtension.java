@@ -12,7 +12,7 @@ public interface MinecraftClientExtension {
     boolean hasTargetsInRange();
     @Nullable
     default Entity getCursorTarget() {
-        var client = (MinecraftClient)this;
+        MinecraftClient client = (MinecraftClient)this;
         if (client.crosshairTarget.getType() == ENTITY) {
             return ((EntityHitResult)client.crosshairTarget).getEntity();
         }

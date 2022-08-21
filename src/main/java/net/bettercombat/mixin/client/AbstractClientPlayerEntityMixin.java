@@ -1,6 +1,7 @@
 package net.bettercombat.mixin.client;
 
 import com.mojang.authlib.GameProfile;
+import dev.kosmx.playerAnim.api.layered.AnimationStack;
 import dev.kosmx.playerAnim.api.layered.IAnimation;
 import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
 import dev.kosmx.playerAnim.api.layered.ModifierLayer;
@@ -8,6 +9,7 @@ import dev.kosmx.playerAnim.api.layered.modifier.MirrorModifier;
 import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import dev.kosmx.playerAnim.core.util.Vec3f;
 import dev.kosmx.playerAnim.impl.IAnimatedPlayer;
+import net.bettercombat.api.WeaponAttributes;
 import net.bettercombat.client.AnimationRegistry;
 import net.bettercombat.client.BetterCombatClient;
 import net.bettercombat.client.PlayerAttackAnimatable;
@@ -16,6 +18,7 @@ import net.bettercombat.logic.WeaponRegistry;
 import net.bettercombat.mixin.LivingEntityAccessor;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Arm;
 import net.minecraft.util.math.BlockPos;
@@ -46,7 +49,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void postInit(ClientWorld world, GameProfile profile, CallbackInfo ci) {
-        var stack = ((IAnimatedPlayer) this).getAnimationStack();
+        AnimationStack stack = ((IAnimatedPlayer) this).getAnimationStack();
         stack.addAnimLayer(1, poseContainer);
         stack.addAnimLayer(2000, containerA.base);
         stack.addAnimLayer(2001, containerB.base);
@@ -57,8 +60,8 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 
     @Override
     public void updateAnimationsOnTick() {
-        var instance = (Object)this;
-        var player = (PlayerEntity)instance;
+        Object instance = (Object)this;
+        PlayerEntity player = (PlayerEntity)instance;
         KeyframeAnimation newPose = null;
         if (player.handSwinging) {
             setPose(newPose); // null
@@ -68,7 +71,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             // Restore auto body rotation upon swing - Fix issue #11
             ((LivingEntityAccessor)player).invokeTurnHead(player.getHeadYaw(), 0);
         }
-        var attributes = WeaponRegistry.getAttributes(player.getMainHandStack());
+        WeaponAttributes attributes = WeaponRegistry.getAttributes(player.getMainHandStack());
         if (attributes != null && attributes.pose() != null) {
             newPose = AnimationRegistry.animations.get(attributes.pose());
         }
@@ -76,8 +79,8 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     }
 
     private void setPose(@Nullable KeyframeAnimation pose) {
-        var mirror = shouldMirrorByMainArm();
-        var newPoseData = PoseData.from(pose, mirror);
+        boolean mirror = shouldMirrorByMainArm();
+        PoseData newPoseData = PoseData.from(pose, mirror);
         if (lastPose != null && newPoseData.equals(lastPose)) {
             return;
         }
@@ -85,7 +88,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         if (pose == null) {
             this.poseContainer.setAnimation(null);
         } else {
-            var copy = pose.mutableCopy();
+            KeyframeAnimation.AnimationBuilder copy = pose.mutableCopy();
             updateAnimationByCurrentActivity(copy);
             poseMirrorModifier.setEnabled(mirror);
             poseContainer.setAnimation(new KeyframeAnimationPlayer(copy.build(), 0));
@@ -102,11 +105,11 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     public void playAttackAnimation(String name, boolean isOffHand, float length) {
         try {
             KeyframeAnimation animation = AnimationRegistry.animations.get(name);
-            var copy = animation.mutableCopy();
+            KeyframeAnimation.AnimationBuilder copy = animation.mutableCopy();
             updateAnimationByCurrentActivity(copy);
             copy.head.pitch.setEnabled(false);
-            var speed = ((float)animation.endTick) / length;
-            var mirror = isOffHand;
+            float speed = ((float)animation.endTick) / length;
+            boolean mirror = isOffHand;
             if(shouldMirrorByMainArm()) {
                 mirror = !mirror;
             }
@@ -114,7 +117,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             if (BetterCombatClient.config.isSmoothAnimationTransitionEnabled) {
                 playbackCount += 1;
             }
-            var container = getCurrentPlaybackSubStack();
+            AttackAnimationSubStack container = getCurrentPlaybackSubStack();
 
             container.speed.speed = speed;
             container.mirror.setEnabled(mirror);
@@ -125,7 +128,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     }
 
     private AdjustmentModifier createAdjustmentModifier() {
-        var player = (PlayerEntity)this;
+        PlayerEntity player = (PlayerEntity)this;
         return new AdjustmentModifier((partName) -> {
             // System.out.println("Player pitch: " + player.getPitch());
             float rotationX = 0;
@@ -136,7 +139,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             float offsetZ = 0;
 
             if (FirstPersonRenderHelper.isRenderingFirstPersonPlayerModel) {
-                var pitch = player.getPitch(1);
+                float pitch = player.getPitch(1);
                 pitch = (float) Math.toRadians(pitch);
                 switch (partName) {
                     case "rightArm", "leftArm" -> {
@@ -147,7 +150,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
                     }
                 }
             } else {
-                var pitch = player.getPitch(1) / 2F;
+                float pitch = player.getPitch(1) / 2F;
                 pitch = (float) Math.toRadians(pitch);
                 switch (partName) {
                     case "body" -> {
@@ -173,7 +176,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     }
 
     private void updateAnimationByCurrentActivity(KeyframeAnimation.AnimationBuilder animation) {
-        var pose = getPose();
+        EntityPose pose = getPose();
         switch (pose) {
             case STANDING -> {
             }

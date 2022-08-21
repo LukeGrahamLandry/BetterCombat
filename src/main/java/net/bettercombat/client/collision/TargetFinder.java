@@ -27,15 +27,15 @@ public class TargetFinder {
 
         boolean isSpinAttack = attack.angle() > 180;
         Vec3d size = WeaponHitBoxes.createHitbox(attack.hitbox(), attackRange, isSpinAttack);
-        var obb = new OrientedBoundingBox(origin, size, player.getPitch(1), player.getYaw(1));
+        OrientedBoundingBox obb = new OrientedBoundingBox(origin, size, player.getPitch(1), player.getYaw(1));
         if (!isSpinAttack) {
             obb = obb.offsetAlongAxisZ(size.z / 2F);
         }
         obb.updateVertex();
 
-        var collisionFilter = new CollisionFilter(obb);
+        CollisionFilter collisionFilter = new CollisionFilter(obb);
         entities = collisionFilter.filter(entities);
-        var radialFilter = new RadialFilter(origin, obb.axisZ, attackRange, attack.angle());
+        RadialFilter radialFilter = new RadialFilter(origin, obb.axisZ, attackRange, attack.angle());
         entities = radialFilter.filter(entities);
         return new TargetResult(entities, obb);
     }

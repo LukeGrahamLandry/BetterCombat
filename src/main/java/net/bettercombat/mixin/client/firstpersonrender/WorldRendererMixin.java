@@ -45,7 +45,7 @@ public abstract class WorldRendererMixin {
             currentAnimation = Optional.empty();
         }
         Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
-        var isActive = false;
+        boolean isActive = false;
         if (currentAnimation.isPresent()) {
             isActive = currentAnimation.get().isActive();
             if (currentAnimation.get() instanceof IExtendedAnimation extendedAnimation) {

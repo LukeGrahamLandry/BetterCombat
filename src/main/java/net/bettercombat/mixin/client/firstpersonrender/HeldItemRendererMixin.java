@@ -26,7 +26,7 @@ public class HeldItemRendererMixin {
         }
         Optional<IAnimation> currentAnimation = ((PlayerAttackAnimatable) player).getCurrentAnimation();
         if (currentAnimation.isPresent()) {
-            var isActive = currentAnimation.get().isActive();
+            boolean isActive = currentAnimation.get().isActive();
             if (currentAnimation.get() instanceof IExtendedAnimation extendedAnimation) {
                 isActive = extendedAnimation.isActiveInFirstPerson();
             }

@@ -80,13 +80,13 @@ public class Packets {
         }
 
         public static AttackSound read(PacketByteBuf buffer) {
-            var x = buffer.readDouble();
-            var y = buffer.readDouble();
-            var z = buffer.readDouble();
-            var soundId = buffer.readString();
-            var volume = buffer.readFloat();
-            var pitch = buffer.readFloat();
-            var seed = buffer.readLong();
+            double x = buffer.readDouble();
+            double y = buffer.readDouble();
+            double z = buffer.readDouble();
+            String soundId = buffer.readString();
+            float volume = buffer.readFloat();
+            float pitch = buffer.readFloat();
+            long seed = buffer.readLong();
             return new AttackSound(x, y, z, soundId, volume, pitch, seed);
         }
     }
@@ -99,17 +99,17 @@ public class Packets {
         public static Identifier ID = new Identifier(BetterCombat.MODID, "config_sync");
 
         public static PacketByteBuf write(ServerConfig config) {
-            var gson = new Gson();
-            var json = gson.toJson(config);
-            var buffer = PacketByteBufs.create();
+            Gson gson = new Gson();
+            String json = gson.toJson(config);
+            PacketByteBuf buffer = PacketByteBufs.create();
             buffer.writeString(json);
             return buffer;
         }
 
         public static ServerConfig read(PacketByteBuf buffer) {
-            var gson = new Gson();
-            var json = buffer.readString();
-            var config = gson.fromJson(json, ServerConfig.class);
+            Gson gson = new Gson();
+            String json = buffer.readString();
+            ServerConfig config = gson.fromJson(json, ServerConfig.class);
             return config;
         }
     }

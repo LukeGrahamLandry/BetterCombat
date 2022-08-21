@@ -64,10 +64,10 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
     private void setupTextRenderer() {
         HudRenderCallback.EVENT.register((matrices, f) -> {
             if (textToRender != null && !textToRender.isEmpty()) {
-                var client = MinecraftClient.getInstance();
-                var textRenderer = client.inGameHud.getFontRenderer();
-                var scaledWidth = client.getWindow().getScaledWidth();
-                var scaledHeight = client.getWindow().getScaledHeight();
+                MinecraftClient client = MinecraftClient.getInstance();
+                TextRenderer textRenderer = client.inGameHud.getFontRenderer();
+                int scaledWidth = client.getWindow().getScaledWidth();
+                int scaledHeight = client.getWindow().getScaledHeight();
 
                 int i = textRenderer.getWidth(textToRender);
                 int j = (scaledWidth - i) / 2;
@@ -137,7 +137,7 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
 
     @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true)
     private void pre_doItemUse(CallbackInfo ci) {
-        var hand = getCurrentHand();
+        AttackHand hand = getCurrentHand();
         if (hand == null) { return; }
         double upswingRate = hand.upswingRate();
         if (upswingTicks > 0 || player.getAttackCooldownProgress(0) < (1.0 - upswingRate)) {
@@ -177,7 +177,7 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
     private void startUpswing(WeaponAttributes attributes) {
         // Guard conditions
 
-        var hand = getCurrentHand();
+        AttackHand hand = getCurrentHand();
         if (hand == null) { return; }
         double upswingRate = hand.upswingRate();
         if (upswingTicks > 0
@@ -265,7 +265,7 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
         if ((BetterCombatClient.config.isHighlightCrosshairEnabled)
                 && !ranTargetCheckCurrentTick) {
             MinecraftClient client = thisClient();
-            var hand = PlayerAttackHelper.getCurrentAttack(player, getComboCount());
+            AttackHand hand = PlayerAttackHelper.getCurrentAttack(player, getComboCount());
             WeaponAttributes attributes = WeaponRegistry.getAttributes(client.player.getMainHandStack());
             List<Entity> targets = List.of();
             if (attributes != null) {
@@ -293,10 +293,10 @@ public abstract class MinecraftClientInject implements MinecraftClientExtension 
 
     private void performAttack() {
         MinecraftClient client = thisClient();
-        var hand = getCurrentHand();
+        AttackHand hand = getCurrentHand();
         if (hand == null) { return; }
-        var attack = hand.attack();
-        var upswingRate = hand.upswingRate();
+        WeaponAttributes.Attack attack = hand.attack();
+        double upswingRate = hand.upswingRate();
         if (client.player.getAttackCooldownProgress(0) < (1.0 - upswingRate)) {
             return;
         }

@@ -13,6 +13,7 @@ import net.bettercombat.network.ServerNetwork;
 import net.bettercombat.utils.SoundHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.resource.ResourceManager;
 import net.tinyconfig.ConfigManager;
 
 public class BetterCombat implements ModInitializer {
@@ -35,7 +36,7 @@ public class BetterCombat implements ModInitializer {
 
         ServerNetwork.initializeHandlers();
         ServerLifecycleEvents.SERVER_STARTED.register((minecraftServer) -> {
-            var resourceManger = ((MinecraftServerAccessor) minecraftServer).getServerResourceManager().getResourceManager();
+            ResourceManager resourceManger = ((MinecraftServerAccessor) minecraftServer).getServerResourceManager().getResourceManager();
             WeaponRegistry.loadAttributes(resourceManger);
             if (config.fallback_compatibility_enabled) {
                 WeaponAttributesFallback.initialize();

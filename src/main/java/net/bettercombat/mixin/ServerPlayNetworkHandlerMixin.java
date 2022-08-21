@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class ServerPlayNetworkHandlerMixin {
     @Redirect(method = "onPlayerAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;getStackInHand(Lnet/minecraft/util/Hand;)Lnet/minecraft/item/ItemStack;"))
     public ItemStack getStackInHand(ServerPlayerEntity instance, Hand hand) {
-        var player = instance;
+        ServerPlayerEntity player = instance;
         ItemStack result = null;
         switch (hand) {
             case MAIN_HAND -> {

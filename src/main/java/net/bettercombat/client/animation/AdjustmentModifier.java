@@ -53,10 +53,10 @@ public final class AdjustmentModifier extends AbstractModifier {
             return super.get3DTransform(modelName, type, tickDelta, value0);
         }
 
-        var partModifier = source.apply(modelName);
+        Optional<PartModifier> partModifier = source.apply(modelName);
 
-        var modifiedVector = value0;
-        var fade = getFadeIn(tickDelta) * getFadeOut(tickDelta);
+        Vec3f modifiedVector = value0;
+        float fade = getFadeIn(tickDelta) * getFadeOut(tickDelta);
         if (partModifier.isPresent()) {
             modifiedVector = transformVector(modifiedVector, type, partModifier.get(), fade);
             modifiedVector = super.get3DTransform(modelName, type, tickDelta, modifiedVector);

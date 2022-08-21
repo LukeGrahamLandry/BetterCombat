@@ -51,7 +51,7 @@ public class ConfigManager<Config> {
     }
 
     public void refresh() {
-        var filePath = getConfigFilePath();
+        Path filePath = getConfigFilePath();
         load();
         if (sanitize || !Files.exists(filePath)) {
             save();
@@ -59,10 +59,10 @@ public class ConfigManager<Config> {
     }
 
     public void load() {
-        var filePath = getConfigFilePath();
+        Path filePath = getConfigFilePath();
 
         try {
-            var gson = new Gson();
+            Gson gson = new Gson();
             if (Files.exists(filePath)) {
                 // Read
                 Reader reader = Files.newBufferedReader(filePath);
@@ -77,21 +77,21 @@ public class ConfigManager<Config> {
     }
 
     public void save() {
-        var config = currentConfig;
-        var filePath = getConfigFilePath();
+        Config config = currentConfig;
+        Path filePath = getConfigFilePath();
         Path configDir = getConfigDir();
 
         try {
             if (directory != null && !directory.isEmpty()) {
-                var directoryPath = configDir.resolve(directory);
+                Path directoryPath = configDir.resolve(directory);
                 Files.createDirectories(directoryPath);
             }
-            var prettyGson = new GsonBuilder().setPrettyPrinting().create();
+            Gson prettyGson = new GsonBuilder().setPrettyPrinting().create();
             Writer writer = Files.newBufferedWriter(filePath);
             writer.write(prettyGson.toJson(config));
             writer.close();
             if (isLoggingEnabled) {
-                var gson = new Gson();
+                Gson gson = new Gson();
                 LOGGER.info(configName + " config written: " + gson.toJson(config));
             }
         } catch(Exception e) {
@@ -106,7 +106,7 @@ public class ConfigManager<Config> {
     }
 
     private Path getConfigFilePath() {
-        var configFilePath = configName + ".json";
+        String configFilePath = configName + ".json";
         if (directory != null && !directory.isEmpty()) {
             configFilePath = directory + "/" + configFilePath;
         }

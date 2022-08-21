@@ -4,6 +4,8 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import net.bettercombat.BetterCombat;
+import net.bettercombat.api.WeaponAttributes;
+import net.bettercombat.logic.AttackHand;
 import net.bettercombat.logic.PlayerAttackHelper;
 import net.bettercombat.logic.PlayerAttackProperties;
 import net.bettercombat.logic.WeaponRegistry;
@@ -50,8 +52,8 @@ public class ServerNetwork {
             if (world == null || world.isClient) {
                 return;
             }
-            final var packet = Packets.AttackAnimation.read(buf);
-            final var forwardBuffer = new Packets.AttackAnimation(player.getEntityId(), packet.isOffHand(), packet.animationName(), packet.length()).write();
+            final Packets.AttackAnimation packet = Packets.AttackAnimation.read(buf);
+            final PacketByteBuf forwardBuffer = new Packets.AttackAnimation(player.getEntityId(), packet.isOffHand(), packet.animationName(), packet.length()).write();
             PlayerLookup.tracking(player).forEach(serverPlayer -> {
                 try {
                     if (serverPlayer.getEntityId() != player.getEntityId() && ServerPlayNetworking.canSend(serverPlayer, Packets.AttackAnimation.ID)) {
@@ -69,8 +71,8 @@ public class ServerNetwork {
             if (world == null || world.isClient) {
                 return;
             }
-            final var request = Packets.C2S_AttackRequest.read(buf);
-            final var hand = PlayerAttackHelper.getCurrentAttack(player, request.comboCount());
+            final Packets.C2S_AttackRequest request = Packets.C2S_AttackRequest.read(buf);
+            final AttackHand hand = PlayerAttackHelper.getCurrentAttack(player, request.comboCount());
             if (hand == null) {
                 LOGGER.error("Server handling Packets.C2S_AttackRequest - No current attack hand!");
                 LOGGER.error("Combo count: " + request.comboCount() + " is dual wielding: " + PlayerAttackHelper.isDualWielding(player));
@@ -78,8 +80,8 @@ public class ServerNetwork {
                 LOGGER.error("Off-hand stack: " + player.getOffHandStack());
                 return;
             }
-            final var attack = hand.attack();
-            final var attributes = hand.attributes();
+            final WeaponAttributes.Attack attack = hand.attack();
+            final WeaponAttributes attributes = hand.attributes();
             final boolean useVanillaPacket = Packets.C2S_AttackRequest.UseVanillaPacket;
             world.getServer().execute(() -> {
                 ((PlayerAttackProperties)player).setComboCount(request.comboCount());
@@ -96,7 +98,7 @@ public class ServerNetwork {
                             new EntityAttributeModifier(UUID.randomUUID(), "COMBO_DAMAGE_MULTIPLIER", comboMultiplier, EntityAttributeModifier.Operation.MULTIPLY_BASE));
                     player.getAttributes().addTemporaryModifiers(comboAttributes);
 
-                    var dualWieldingMultiplier = PlayerAttackHelper.getDualWieldingAttackDamageMultiplier(player, hand) - 1;
+                    float dualWieldingMultiplier = PlayerAttackHelper.getDualWieldingAttackDamageMultiplier(player, hand) - 1;
                     if (dualWieldingMultiplier != 0) {
                         dualWieldingAttributes = HashMultimap.create();
                         dualWieldingAttributes.put(
@@ -112,7 +114,7 @@ public class ServerNetwork {
                     SoundHelper.playSound(world, player, attack.swingSound());
                 }
 
-                var lastAttackedTicks = ((LivingEntityAccessor)player).getLastAttackedTicks();
+                int lastAttackedTicks = ((LivingEntityAccessor)player).getLastAttackedTicks();
                 if (!useVanillaPacket) {
                     player.setSneaking(request.isSneaking());
                 }

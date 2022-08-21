@@ -7,19 +7,19 @@ import java.util.ArrayList;
 
 public class WeaponAttributesHelper {
     public static WeaponAttributes override(WeaponAttributes a, WeaponAttributes b) {
-        var attackRange = b.attackRange() > 0 ? b.attackRange() : a.attackRange();
-        var pose = b.pose() != null ? b.pose() : a.pose();
-        var isTwoHanded = b.isTwoHanded();
-        var category = b.category() != null ? b.category() : a.category();
-        var attacks = a.attacks();
+        double attackRange = b.attackRange() > 0 ? b.attackRange() : a.attackRange();
+        String pose = b.pose() != null ? b.pose() : a.pose();
+        boolean isTwoHanded = b.isTwoHanded();
+        String category = b.category() != null ? b.category() : a.category();
+        WeaponAttributes.Attack[] attacks = a.attacks();
         if (b.attacks() != null && b.attacks().length > 0) {
-            var overrideAttacks = new ArrayList<WeaponAttributes.Attack>();
+            ArrayList<WeaponAttributes.Attack> overrideAttacks = new ArrayList<WeaponAttributes.Attack>();
             for(int i = 0; i < b.attacks().length; ++i) {
-                var base = (a.attacks() != null && a.attacks().length > i)
+                WeaponAttributes.Attack base = (a.attacks() != null && a.attacks().length > i)
                         ? a.attacks()[i]
                         : new WeaponAttributes.Attack(null, null, 0, 0, 0, null, null, null);
-                var override = b.attacks()[i];
-                var attack = new WeaponAttributes.Attack(
+                WeaponAttributes.Attack override = b.attacks()[i];
+                WeaponAttributes.Attack attack = new WeaponAttributes.Attack(
                         override.conditions() != null ? override.conditions() : base.conditions(),
                         override.hitbox() != null ? override.hitbox() : base.hitbox(),
                         override.damageMultiplier() != 0 ? override.damageMultiplier() : base.damageMultiplier(),
@@ -42,12 +42,12 @@ public class WeaponAttributesHelper {
         if (attributes.attacks().length == 0) {
             throw new InvalidObjectException("Empty `attacks` array");
         }
-        var index = 0;
+        int index = 0;
         for (WeaponAttributes.Attack attack : attributes.attacks()) {
             try {
                 validate(attack);
             } catch(InvalidObjectException exception) {
-                var message = "Invalid attack at index:" + index + " - " + exception.getMessage();
+                String message = "Invalid attack at index:" + index + " - " + exception.getMessage();
                 throw new InvalidObjectException(message);
             }
             index += 1;

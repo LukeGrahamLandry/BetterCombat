@@ -6,6 +6,7 @@ import net.bettercombat.network.Packets;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
@@ -26,7 +27,7 @@ public class SoundHelper {
             float pitch = (sound.randomness() > 0)
                     ?  rng.nextFloat(sound.pitch() - sound.randomness(), sound.pitch() + sound.randomness())
                     : sound.pitch();
-            var packet = new Packets.AttackSound(
+            PacketByteBuf packet = new Packets.AttackSound(
                     entity.getX(),
                     entity.getY(),
                     entity.getZ(),
@@ -36,12 +37,12 @@ public class SoundHelper {
                     rng.nextLong())
                     .write();
 
-            var soundEvent = Registry.SOUND_EVENT.get(new Identifier(sound.id()));
+            SoundEvent soundEvent = Registry.SOUND_EVENT.get(new Identifier(sound.id()));
             // TODO: what was SoundEvent#getDistanceToTravel in 1.16.5
-            var distance = 5; // soundEvent.getDistanceToTravel(sound.volume());
-            var origin = new Vec3d(entity.getX(), entity.getY(), entity.getZ());
+            int distance = 5; // soundEvent.getDistanceToTravel(sound.volume());
+            Vec3d origin = new Vec3d(entity.getX(), entity.getY(), entity.getZ());
             PlayerLookup.around(world, origin, distance).forEach(serverPlayer -> {
-                var channel = Packets.AttackSound.ID;
+                Identifier channel = Packets.AttackSound.ID;
                 try {
                     if (ServerPlayNetworking.canSend(serverPlayer, channel)) {
                         ServerPlayNetworking.send(serverPlayer, channel, packet);
@@ -85,9 +86,9 @@ public class SoundHelper {
             "sword_slash",
             "wand_swing"
         );
-        for (var soundKey: soundKeys) {
-            var soundId = new Identifier(BetterCombat.MODID, soundKey);
-            var soundEvent = new SoundEvent(soundId);
+        for (String soundKey: soundKeys) {
+            Identifier soundId = new Identifier(BetterCombat.MODID, soundKey);
+            SoundEvent soundEvent = new SoundEvent(soundId);
             Registry.register(Registry.SOUND_EVENT, soundId, soundEvent);
         }
     }
