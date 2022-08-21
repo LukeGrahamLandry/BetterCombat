@@ -2,6 +2,7 @@ package net.bettercombat.utils;
 
 import net.bettercombat.BetterCombat;
 import net.bettercombat.api.WeaponAttributes;
+import net.bettercombat.bettercombat_ForgedFabricMod;
 import net.bettercombat.network.Packets;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -93,7 +94,9 @@ public class SoundHelper {
         for (String soundKey: soundKeys) {
             Identifier soundId = new Identifier(BetterCombat.MODID, soundKey);
             SoundEvent soundEvent = new SoundEvent(soundId);
-            Registry.register(Registry.SOUND_EVENT, soundId, soundEvent);
+
+            // Registry.register(Registry.SOUND_EVENT, soundId, soundEvent);
+            bettercombat_ForgedFabricMod.SOUNDS.register(soundKey, () -> soundEvent);
         }
     }
 }

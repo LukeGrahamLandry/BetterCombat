@@ -1,19 +1,15 @@
 package net.bettercombat;
 
-import me.shedaniel.autoconfig.AutoConfig;
-import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
-import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.bettercombat.config.FallbackConfig;
 import net.bettercombat.config.ServerConfig;
-import net.bettercombat.config.ServerConfigWrapper;
 import net.bettercombat.logic.WeaponAttributesFallback;
 import net.bettercombat.logic.WeaponRegistry;
-import net.bettercombat.mixin.MinecraftServerAccessor;
 import net.bettercombat.network.ServerNetwork;
 import net.bettercombat.utils.SoundHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.ServerResourceManager;
 import net.tinyconfig.ConfigManager;
 
 public class BetterCombat implements ModInitializer {
@@ -29,14 +25,15 @@ public class BetterCombat implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
+        // TODO
+        // AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         // Intuitive way to load a config :)
-        config = AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
+        config = new ServerConfig(); // AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
         loadFallbackConfig();
 
         ServerNetwork.initializeHandlers();
         ServerLifecycleEvents.SERVER_STARTED.register((minecraftServer) -> {
-            ResourceManager resourceManger = ((MinecraftServerAccessor) minecraftServer).getServerResourceManager().getResourceManager();
+            ResourceManager resourceManger = minecraftServer.getDataPackRegistries().getResourceManager();
             WeaponRegistry.loadAttributes(resourceManger);
             if (config.fallback_compatibility_enabled) {
                 WeaponAttributesFallback.initialize();

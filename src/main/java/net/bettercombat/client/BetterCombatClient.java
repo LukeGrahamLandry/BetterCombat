@@ -8,8 +8,6 @@ import net.bettercombat.client.animation.FirstPersonRenderHelper;
 import net.bettercombat.config.ClientConfig;
 import net.bettercombat.config.ClientConfigWrapper;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.object.builder.v1.client.model.FabricModelPredicateProviderRegistry;
@@ -21,7 +19,6 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
-@Environment(EnvType.CLIENT)
 public class BetterCombatClient implements ClientModInitializer {
     public static ClientConfig config;
     public static KeyBinding feintKeyBinding;
@@ -29,9 +26,10 @@ public class BetterCombatClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        AutoConfig.register(ClientConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
+        // TODO
+        // AutoConfig.register(ClientConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         // Intuitive way to load a config :)
-        config = AutoConfig.getConfigHolder(ClientConfigWrapper.class).getConfig().client;
+        config = new ClientConfig(); // AutoConfig.getConfigHolder(ClientConfigWrapper.class).getConfig().client;
 
         ClientNetwork.initializeHandlers();
         WeaponAttributeTooltip.initialize();

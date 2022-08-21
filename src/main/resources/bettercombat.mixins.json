@@ -8,8 +8,7 @@
     "LivingEntityInject",
     "PlayerEntityAccessor",
     "PlayerEntityInject",
-    "ServerPlayNetworkHandlerMixin",
-    "MinecraftServerAccessor"
+    "ServerPlayNetworkHandlerMixin"
   ],
   "client": [
     "client.AbstractClientPlayerEntityMixin",
