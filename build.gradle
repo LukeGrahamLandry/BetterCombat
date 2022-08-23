@@ -48,9 +48,9 @@ dependencies {
     // modApi include("com.github.ZsoltMolnarrr:TinyConfig:1.0.1")
     modImplementation ("dev.kosmx.player-anim:player-animation-lib-forge:0.0.5")
     // modImplementation files("player-animation-lib-0.0.4.jar")
-    modImplementation "ca.lukegrahamlandry.forgedfabric:forgedfabric:0.0.2+1.16"
+    modImplementation "ca.lukegrahamlandry.forgedfabric:forgedfabric:0.0.3+1.16"
 
-    api("me.shedaniel.cloth:cloth-config-forge:${project.cloth_config_version}")
+    modApi("me.shedaniel.cloth:cloth-config-forge:${project.cloth_config_version}")
 
 }
 

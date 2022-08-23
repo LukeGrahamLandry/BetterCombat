@@ -1,7 +1,11 @@
 package net.bettercombat;
 
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
+import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.bettercombat.config.FallbackConfig;
 import net.bettercombat.config.ServerConfig;
+import net.bettercombat.config.ServerConfigWrapper;
 import net.bettercombat.logic.WeaponAttributesFallback;
 import net.bettercombat.logic.WeaponRegistry;
 import net.bettercombat.network.ServerNetwork;
@@ -25,10 +29,9 @@ public class BetterCombat implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        // TODO
-        // AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
+        AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         // Intuitive way to load a config :)
-        config = new ServerConfig(); // AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
+        config = AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
         loadFallbackConfig();
 
         ServerNetwork.initializeHandlers();

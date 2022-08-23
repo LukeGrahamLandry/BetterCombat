@@ -11,7 +11,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.object.builder.v1.client.model.FabricModelPredicateProviderRegistry;
-import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.fake.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
@@ -26,10 +26,9 @@ public class BetterCombatClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        // TODO
-        // AutoConfig.register(ClientConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
+        AutoConfig.register(ClientConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         // Intuitive way to load a config :)
-        config = new ClientConfig(); // AutoConfig.getConfigHolder(ClientConfigWrapper.class).getConfig().client;
+        config = AutoConfig.getConfigHolder(ClientConfigWrapper.class).getConfig().client;
 
         ClientNetwork.initializeHandlers();
         WeaponAttributeTooltip.initialize();
