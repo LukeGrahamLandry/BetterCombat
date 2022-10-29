@@ -5,9 +5,11 @@ import net.bettercombat.api.WeaponAttributes.Attack;
 import net.bettercombat.compatibility.CompatibilityFlags;
 import net.bettercombat.compatibility.PehkuiHelper;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.Tameable;
+import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
@@ -38,15 +40,15 @@ public class TargetFinder {
 
         boolean isSpinAttack = attack.angle() > 180;
         Vec3d size = WeaponHitBoxes.createHitbox(attack.hitbox(), attackRange, isSpinAttack);
-        var obb = new OrientedBoundingBox(origin, size, player.getPitch(), player.getYaw());
+        OrientedBoundingBox obb = new OrientedBoundingBox(origin, size, player.getPitch(1), player.getYaw(1));
         if (!isSpinAttack) {
             obb = obb.offsetAlongAxisZ(size.z / 2F);
         }
         obb.updateVertex();
 
-        var collisionFilter = new CollisionFilter(obb);
+        CollisionFilter collisionFilter = new CollisionFilter(obb);
         entities = collisionFilter.filter(entities);
-        var radialFilter = new RadialFilter(origin, obb.axisZ, attackRange, attack.angle());
+        RadialFilter radialFilter = new RadialFilter(origin, obb.axisZ, attackRange, attack.angle());
         entities = radialFilter.filter(entities);
 //        long elapsedTime = System.nanoTime() - startTime;
 //        System.out.println("TargetResult findAttackTargetResult (ms): " + ((double)elapsedTime) / 1000000.0);
@@ -59,7 +61,7 @@ public class TargetFinder {
 
     public static Vec3d getInitialTracingPoint(PlayerEntity player) {
         double shoulderHeight = player.getHeight() * 0.15 * player.getScaleFactor();
-        return player.getEyePos().subtract(0, shoulderHeight, 0);
+        return new Vec3d(player.getX(), player.getEyeY(), player.getZ()).subtract(0, shoulderHeight, 0);
     }
 
     public static List<Entity> getInitialTargets(PlayerEntity player, Entity cursorTarget, double attackRange) {
@@ -69,11 +71,12 @@ public class TargetFinder {
                 .getOtherEntities(player, box, entity ->  !entity.isSpectator() && entity.collides())
                 .stream()
                 .filter(entity -> {
-                    var result = entity != player
+                    boolean result = entity != player
                             && entity != cursorTarget
                             && entity.isAttackable()
                             && (BetterCombat.config.allow_attacking_mount || !entity.equals(player.getVehicle()));
-                    if (entity instanceof Tameable tameable) {
+                    if (entity instanceof TameableEntity) {
+                        TameableEntity tameable = (TameableEntity) entity;
                         result = result &&
                                 (tameable.getOwnerUuid() != null && !tameable.getOwnerUuid().equals(player.getUuid()));
                     }
@@ -124,7 +127,7 @@ public class TargetFinder {
         public List<Entity> filter(List<Entity> entities) {
             return entities.stream()
                     .filter(entity -> {
-                        var maxAngleDif = (attackAngle / 2.0);
+                        double maxAngleDif = (attackAngle / 2.0);
                         Vec3d distanceVector = CollisionHelper.distanceVector(origin, entity.getBoundingBox());
                         Vec3d positionVector = entity.getPos().add(0, entity.getHeight() / 2F, 0).subtract(origin);
                         return distanceVector.length() <= attackRange
@@ -139,9 +142,9 @@ public class TargetFinder {
         }
 
         private static boolean rayContainsNoObstacle(Vec3d start, Vec3d end) {
-            var client = MinecraftClient.getInstance();
-            var world = client.world;
-            var hit = client.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, client.player));
+            MinecraftClient client = MinecraftClient.getInstance();
+            ClientWorld world = client.world;
+            BlockHitResult hit = client.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, client.player));
             return hit.getType() != HitResult.Type.BLOCK;
         }
     }

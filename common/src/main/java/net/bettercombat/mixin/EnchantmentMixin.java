@@ -1,5 +1,6 @@
 package net.bettercombat.mixin;
 
+import net.bettercombat.api.AttackHand;
 import net.bettercombat.logic.PlayerAttackHelper;
 import net.bettercombat.logic.PlayerAttackProperties;
 import net.minecraft.enchantment.Enchantment;
@@ -21,17 +22,18 @@ public class EnchantmentMixin {
 
     @Inject(method = "getEquipment", at = @At("RETURN"), cancellable = true)
     private void getEquipmentFix(LivingEntity entity, CallbackInfoReturnable<Map<EquipmentSlot, ItemStack>> cir) {
-        if(entity instanceof PlayerEntity player) {
-            var comboCount = ((PlayerAttackProperties) player).getComboCount();
-            var currentHand = PlayerAttackHelper.getCurrentAttack(player, comboCount);
+        if(entity instanceof PlayerEntity) {
+            PlayerEntity player = (PlayerEntity) entity;
+            int comboCount = ((PlayerAttackProperties) player).getComboCount();
+            AttackHand currentHand = PlayerAttackHelper.getCurrentAttack(player, comboCount);
             // If striking with off-hand
             if (currentHand != null && currentHand.isOffHand()) {
                 // Getting enchant from off-hand stack
-                var map = cir.getReturnValue();
+                Map<EquipmentSlot, ItemStack> map = cir.getReturnValue();
                 if (map.get(EquipmentSlot.MAINHAND) != null) {
                     map.remove(EquipmentSlot.MAINHAND);
                 }
-                var offHandStack = player.getOffHandStack();
+                ItemStack offHandStack = player.getOffHandStack();
                 if (!offHandStack.isEmpty()) {
                     map.put(EquipmentSlot.OFFHAND, offHandStack);
                 }

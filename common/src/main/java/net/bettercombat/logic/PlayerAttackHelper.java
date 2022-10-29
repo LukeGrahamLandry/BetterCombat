@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShieldItem;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import static net.minecraft.entity.EquipmentSlot.MAINHAND;
 
@@ -26,14 +27,14 @@ public class PlayerAttackHelper {
     }
 
     public static boolean isDualWielding(PlayerEntity player) {
-        var mainAttributes = WeaponRegistry.getAttributes(player.getMainHandStack());
-        var offAttributes = WeaponRegistry.getAttributes(player.getOffHandStack());
+        WeaponAttributes mainAttributes = WeaponRegistry.getAttributes(player.getMainHandStack());
+        WeaponAttributes offAttributes = WeaponRegistry.getAttributes(player.getOffHandStack());
         return mainAttributes != null && !mainAttributes.isTwoHanded()
                 && offAttributes != null && !offAttributes.isTwoHanded();
     }
 
     public static boolean isTwoHandedWielding(PlayerEntity player) {
-        var mainAttributes = WeaponRegistry.getAttributes(player.getMainHandStack());
+        WeaponAttributes mainAttributes = WeaponRegistry.getAttributes(player.getMainHandStack());
         if (mainAttributes != null) {
             return mainAttributes.isTwoHanded();
         }
@@ -43,32 +44,69 @@ public class PlayerAttackHelper {
     public static AttackHand getCurrentAttack(PlayerEntity player, int comboCount) {
         if (isDualWielding(player)) {
             boolean isOffHand = shouldAttackWithOffHand(player,comboCount);
-            var itemStack = isOffHand
+            ItemStack itemStack = isOffHand
                     ? player.getOffHandStack()
                     : player.getMainHandStack();
-            var attributes = WeaponRegistry.getAttributes(itemStack);
+            WeaponAttributes attributes = WeaponRegistry.getAttributes(itemStack);
             int handSpecificComboCount = ( (isOffHand && comboCount > 0) ? (comboCount - 1) : (comboCount) ) / 2;
-            var attackSelection = selectAttack(handSpecificComboCount, attributes, player, isOffHand);
-            var attack = attackSelection.attack;
-            var combo = attackSelection.comboState;
+            AttackSelection attackSelection = selectAttack(handSpecificComboCount, attributes, player, isOffHand);
+            WeaponAttributes.Attack attack = attackSelection.attack;
+            ComboState combo = attackSelection.comboState;
             return new AttackHand(attack, combo, isOffHand, attributes, itemStack);
         } else {
-            var itemStack = player.getMainHandStack();
+            ItemStack itemStack = player.getMainHandStack();
             WeaponAttributes attributes = WeaponRegistry.getAttributes(itemStack);
             if (attributes != null) {
-                var attackSelection = selectAttack(comboCount, attributes, player, false);
-                var attack = attackSelection.attack;
-                var combo = attackSelection.comboState;
+                AttackSelection attackSelection = selectAttack(comboCount, attributes, player, false);
+                WeaponAttributes.Attack attack = attackSelection.attack;
+                ComboState combo = attackSelection.comboState;
                 return new AttackHand(attack, combo, false, attributes, itemStack);
             }
         }
         return null;
     }
 
-    private record AttackSelection(WeaponAttributes.Attack attack, ComboState comboState) { }
+    private static final class AttackSelection {
+        private final WeaponAttributes.Attack attack;
+        private final ComboState comboState;
+
+        private AttackSelection(WeaponAttributes.Attack attack, ComboState comboState) {
+            this.attack = attack;
+            this.comboState = comboState;
+        }
+
+        public WeaponAttributes.Attack attack() {
+            return attack;
+        }
+
+        public ComboState comboState() {
+            return comboState;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (obj == null || obj.getClass() != this.getClass()) return false;
+            AttackSelection that = (AttackSelection) obj;
+            return Objects.equals(this.attack, that.attack) &&
+                    Objects.equals(this.comboState, that.comboState);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(attack, comboState);
+        }
+
+        @Override
+        public String toString() {
+            return "AttackSelection[" +
+                    "attack=" + attack + ", " +
+                    "comboState=" + comboState + ']';
+        }
+    }
 
     private static AttackSelection selectAttack(int comboCount, WeaponAttributes attributes, PlayerEntity player, boolean isOffHandAttack) {
-        var attacks = attributes.attacks();
+        WeaponAttributes.Attack[] attacks = attributes.attacks();
         attacks = Arrays.stream(attacks)
                 .filter(attack ->
                         attack.conditions() == null
@@ -91,58 +129,53 @@ public class PlayerAttackHelper {
         if (condition == null) {
             return true;
         }
-        switch (condition) {
-            case NOT_DUAL_WIELDING -> {
-                return !isDualWielding(player);
-            }
-            case DUAL_WIELDING_ANY -> {
-                return isDualWielding(player);
-            }
-            case DUAL_WIELDING_SAME -> {
-                return isDualWielding(player) &&
-                        (player.getMainHandStack().getItem() == player.getOffHandStack().getItem());
-            }
-            case DUAL_WIELDING_SAME_CATEGORY -> {
-                if (!isDualWielding(player)) {
-                    return false;
-                }
-                var mainHandAttributes = WeaponRegistry.getAttributes(player.getMainHandStack());
-                var offHandAttributes = WeaponRegistry.getAttributes(player.getOffHandStack());
-                if (mainHandAttributes.category() == null
-                        || mainHandAttributes.category().isEmpty()
-                        || offHandAttributes.category() == null
-                        || offHandAttributes.category().isEmpty()) {
-                    return false;
-                }
-                return mainHandAttributes.category().equals(offHandAttributes.category());
-            }
-            case NO_OFFHAND_ITEM -> {
-                var offhandStack = player.getOffHandStack();
-                if(offhandStack == null || offhandStack.isEmpty()) {{
-                    return true;
-                }}
+        if (condition == WeaponAttributes.Condition.NOT_DUAL_WIELDING) {
+            return !isDualWielding(player);
+        } else if (condition == WeaponAttributes.Condition.DUAL_WIELDING_ANY) {
+            return isDualWielding(player);
+        } else if (condition == WeaponAttributes.Condition.DUAL_WIELDING_SAME) {
+            return isDualWielding(player) &&
+                    (player.getMainHandStack().getItem() == player.getOffHandStack().getItem());
+        } else if (condition == WeaponAttributes.Condition.DUAL_WIELDING_SAME_CATEGORY) {
+            if (!isDualWielding(player)) {
                 return false;
             }
-            case OFF_HAND_SHIELD -> {
-                var offhandStack = player.getOffHandStack();
-                if(offhandStack != null || offhandStack.getItem() instanceof ShieldItem) {{
-                    return true;
-                }}
+            WeaponAttributes mainHandAttributes = WeaponRegistry.getAttributes(player.getMainHandStack());
+            WeaponAttributes offHandAttributes = WeaponRegistry.getAttributes(player.getOffHandStack());
+            if (mainHandAttributes.category() == null
+                    || mainHandAttributes.category().isEmpty()
+                    || offHandAttributes.category() == null
+                    || offHandAttributes.category().isEmpty()) {
                 return false;
             }
-            case MAIN_HAND_ONLY -> {
-                return !isOffHandAttack;
+            return mainHandAttributes.category().equals(offHandAttributes.category());
+        } else if (condition == WeaponAttributes.Condition.NO_OFFHAND_ITEM) {
+            ItemStack offhandStack = player.getOffHandStack();
+            if (offhandStack == null || offhandStack.isEmpty()) {
+                {
+                    return true;
+                }
             }
-            case OFF_HAND_ONLY -> {
-                return isOffHandAttack;
+            return false;
+        } else if (condition == WeaponAttributes.Condition.OFF_HAND_SHIELD) {
+            ItemStack offhandStack = player.getOffHandStack();
+            if (offhandStack != null || offhandStack.getItem() instanceof ShieldItem) {
+                {
+                    return true;
+                }
             }
+            return false;
+        } else if (condition == WeaponAttributes.Condition.MAIN_HAND_ONLY) {
+            return !isOffHandAttack;
+        } else if (condition == WeaponAttributes.Condition.OFF_HAND_ONLY) {
+            return isOffHandAttack;
         }
         return true;
     }
 
     public static void setAttributesForOffHandAttack(PlayerEntity player, boolean useOffHand) {
-        var mainHandStack = player.getMainHandStack();
-        var offHandStack = player.getOffHandStack();
+        ItemStack mainHandStack = player.getMainHandStack();
+        ItemStack offHandStack = player.getOffHandStack();
         ItemStack add;
         ItemStack remove;
         if (useOffHand) {

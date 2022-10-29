@@ -1,31 +1,36 @@
 package net.bettercombat.logic;
 
+import com.google.common.collect.Multimap;
 import net.bettercombat.BetterCombat;
+import net.bettercombat.api.AttributesContainer;
+import net.bettercombat.config.FallbackConfig;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.Item;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class WeaponAttributesFallback {
     public static void initialize() {
-        var config = BetterCombat.fallbackConfig.currentConfig;
-        for(var itemId: Registry.ITEM.getIds()) {
-            var item = Registry.ITEM.get(itemId);
+        FallbackConfig config = BetterCombat.fallbackConfig.value;
+        for(Identifier itemId: Registry.ITEM.getIds()) {
+            Item item = Registry.ITEM.get(itemId);
             if (!hasAttributeModifier(item, EntityAttributes.GENERIC_ATTACK_DAMAGE)
                     || matches(itemId.toString(), config.blacklist_item_id_regex)) {
                 // Skipping items without attack damage attribute
                 continue;
             }
-            for (var fallbackOption: config.fallback_compatibility) {
+            for (FallbackConfig.CompatibilitySpecifier fallbackOption: config.fallback_compatibility) {
                 // If - no registration & matches regex
                 if (WeaponRegistry.getAttributes(itemId) == null
                         && matches(itemId.toString(), fallbackOption.item_id_regex)) {
-                    var container = WeaponRegistry.containers.get(new Identifier(fallbackOption.weapon_attributes));
+                    AttributesContainer container = WeaponRegistry.containers.get(new Identifier(fallbackOption.weapon_attributes));
                     // If assignable attributes are known
                     if (container != null) {
                         WeaponRegistry.resolveAndRegisterAttributes(itemId, container);
@@ -37,11 +42,11 @@ public class WeaponAttributesFallback {
     }
 
     private static boolean hasAttributeModifier(Item item, EntityAttribute searchedAttribute) {
-        var searchedAttributeId = Registry.ATTRIBUTE.getId(searchedAttribute);
-        var attributes = item.getAttributeModifiers(EquipmentSlot.MAINHAND);
-        for (var entry: attributes.entries()) {
-            var attribute = entry.getKey();
-            var attributeId = Registry.ATTRIBUTE.getId(attribute);
+        Identifier searchedAttributeId = Registry.ATTRIBUTE.getId(searchedAttribute);
+        Multimap<EntityAttribute, EntityAttributeModifier> attributes = item.getAttributeModifiers(EquipmentSlot.MAINHAND);
+        for (Map.Entry<EntityAttribute, EntityAttributeModifier> entry: attributes.entries()) {
+            EntityAttribute attribute = entry.getKey();
+            Identifier attributeId = Registry.ATTRIBUTE.getId(attribute);
             if (attributeId.equals(searchedAttributeId)) {
                 return true;
             }

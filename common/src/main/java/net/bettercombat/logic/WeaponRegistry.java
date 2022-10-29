@@ -3,7 +3,7 @@ package net.bettercombat.logic;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
-import com.mojang.logging.LogUtils;
+import org.apache.logging.log4j.LogManager;
 import net.bettercombat.BetterCombat;
 import net.bettercombat.api.AttributesContainer;
 import net.bettercombat.api.WeaponAttributes;
@@ -12,10 +12,11 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
@@ -25,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 public class WeaponRegistry {
-    static final Logger LOGGER = LogUtils.getLogger();
+    static final Logger LOGGER = LogManager.getLogger();
     static Map<Identifier, WeaponAttributes> registrations = new HashMap();
     static Map<Identifier, AttributesContainer> containers = new HashMap();
 
@@ -41,8 +42,8 @@ public class WeaponRegistry {
         if (itemStack == null) {
             return null;
         }
-        if (itemStack.hasNbt()) {
-            var attributes = WeaponAttributesHelper.readFromNBT(itemStack);
+        if (itemStack.hasTag()) {
+            WeaponAttributes attributes = WeaponAttributesHelper.readFromNBT(itemStack);
             if (attributes != null) {
                 return attributes;
             }
@@ -60,7 +61,7 @@ public class WeaponRegistry {
 
         // Resolving parents
         containers.forEach( (itemId, container) -> {
-            if (!Registry.ITEM.containsId(itemId)) {
+            if (Registry.ITEM.get(itemId) == Registry.ITEM.get(Registry.ITEM.getDefaultId())) {
                 return;
             }
             resolveAndRegisterAttributes(itemId, container);
@@ -68,16 +69,16 @@ public class WeaponRegistry {
     }
 
     private static void loadContainers(ResourceManager resourceManager) {
-        var gson = new Gson();
+        Gson gson = new Gson();
         Map<Identifier, AttributesContainer> containers = new HashMap();
         // Reading all attribute files
         for (Identifier identifier : resourceManager.findResources("weapon_attributes", fileName -> fileName.endsWith(".json"))) {
             try {
                 // System.out.println("Checking resource: " + identifier);
-                var resource = resourceManager.getResource(identifier);
+                Resource resource = resourceManager.getResource(identifier);
                 JsonReader reader = new JsonReader(new InputStreamReader(resource.getInputStream()));
                 AttributesContainer container = WeaponAttributesHelper.decode(reader);
-                var id = identifier
+                String id = identifier
                         .toString().replace("weapon_attributes/", "");
                 id = id.substring(0, id.lastIndexOf('.'));
                 containers.put(new Identifier(id), container);
@@ -102,8 +103,8 @@ public class WeaponRegistry {
                 }
             }
 
-            var empty = new WeaponAttributes(0, null, null, false, null,null);
-            var resolvedAttributes = resolutionChain
+            WeaponAttributes empty = new WeaponAttributes(0, null, null, false, null,null);
+            WeaponAttributes resolvedAttributes = resolutionChain
                     .stream()
                     .reduce(empty, (a, b) -> {
                         if (b == null) { // I'm not sure why null can enter as `b`
@@ -122,7 +123,7 @@ public class WeaponRegistry {
     }
 
     public static void resolveAndRegisterAttributes(Identifier itemId, AttributesContainer container) {
-        var resolvedAttributes = resolveAttributes(itemId, container);
+        WeaponAttributes resolvedAttributes = resolveAttributes(itemId, container);
         if (resolvedAttributes != null) {
             register(itemId, resolvedAttributes);
         }
@@ -134,20 +135,20 @@ public class WeaponRegistry {
 
     public static void encodeRegistry() {
         PacketByteBuf buffer = PacketByteBufs.create();
-        var gson = new Gson();
-        var json = gson.toJson(registrations);
+        Gson gson = new Gson();
+        String json = gson.toJson(registrations);
         if (BetterCombat.config.weapon_registry_logging) {
             LOGGER.info("Weapon Attribute registry loaded: " + json);
         }
 
         List<String> chunks = new ArrayList<>();
-        var chunkSize = 10000;
+        int chunkSize = 10000;
         for (int i = 0; i < json.length(); i += chunkSize) {
             chunks.add(json.substring(i, Math.min(json.length(), i + chunkSize)));
         }
 
         buffer.writeInt(chunks.size());
-        for (var chunk: chunks) {
+        for (String chunk: chunks) {
             buffer.writeString(chunk);
         }
 
@@ -157,7 +158,7 @@ public class WeaponRegistry {
     }
 
     public static void decodeRegistry(PacketByteBuf buffer) {
-        var chunkCount = buffer.readInt();
+        int chunkCount = buffer.readInt();
         String json = "";
         for (int i = 0; i < chunkCount; ++i) {
             json = json.concat(buffer.readString());
@@ -166,7 +167,7 @@ public class WeaponRegistry {
         if (BetterCombat.config.weapon_registry_logging) {
             LOGGER.info("Weapon Attribute registry received: " + json);
         }
-        var gson = new Gson();
+        Gson gson = new Gson();
         Type mapType = new TypeToken<Map<String, WeaponAttributes>>() {}.getType();
         Map<String, WeaponAttributes> readRegistrations = gson.fromJson(json, mapType);
         Map<Identifier, WeaponAttributes> newRegistrations = new HashMap();

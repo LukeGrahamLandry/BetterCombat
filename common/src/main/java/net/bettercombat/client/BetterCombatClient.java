@@ -12,8 +12,10 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.object.builder.v1.client.model.FabricModelPredicateProviderRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
+import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
@@ -29,15 +31,13 @@ public class BetterCombatClient implements ClientModInitializer {
         ClientNetwork.initializeHandlers();
         WeaponAttributeTooltip.initialize();
         ClientLifecycleEvents.CLIENT_STARTED.register((client) -> {
-            var resourceManager = MinecraftClient.getInstance().getResourceManager();
+            ResourceManager resourceManager = MinecraftClient.getInstance().getResourceManager();
             AnimationRegistry.load(resourceManager);
         });
         PlatformClient.registerKeyBindings(BetterCombatKeybindings.all);
 
-        if (Platform.Fabric) { // forge renames this method
-            ModelPredicateProviderRegistry.register(new Identifier(BetterCombat.MODID, "loaded"), (stack, world, entity, seed) -> {
-                return 1.0F;
-            });
-        }
+        FabricModelPredicateProviderRegistry.register(new Identifier(BetterCombat.MODID, "loaded"), (stack, world, entity) -> {
+            return 1.0F;
+        });
     }
 }

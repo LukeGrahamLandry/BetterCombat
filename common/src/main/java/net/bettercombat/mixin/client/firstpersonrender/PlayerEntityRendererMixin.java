@@ -4,8 +4,9 @@ import net.bettercombat.client.BetterCombatClient;
 import net.bettercombat.client.animation.FirstPersonRenderHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
 import net.minecraft.client.render.entity.PlayerModelPart;
@@ -21,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<AbstractClientPlayerEntity,
         PlayerEntityModel<AbstractClientPlayerEntity>> {
 
-    public PlayerEntityRendererMixin(EntityRendererFactory.Context ctx,
+    public PlayerEntityRendererMixin(EntityRenderDispatcher ctx,
                                      PlayerEntityModel<AbstractClientPlayerEntity> model, float shadowRadius) {
         super(ctx, model, shadowRadius);
     }
@@ -36,19 +37,19 @@ public abstract class PlayerEntityRendererMixin extends LivingEntityRenderer<Abs
             return;
         }
 
-        var showArms = BetterCombatClient.config.isShowingArmsInFirstPerson;
+        boolean showArms = BetterCombatClient.config.isShowingArmsInFirstPerson;
         if (entity == MinecraftClient.getInstance().player) {
-            var player = MinecraftClient.getInstance().player;
+            ClientPlayerEntity player = MinecraftClient.getInstance().player;
             setPartsVisible(false);
-            var showRightArm = showArms;
-            var showLeftArm = showArms;
+            boolean showRightArm = showArms;
+            boolean showLeftArm = showArms;
             if (!BetterCombatClient.config.isShowingOtherHandFirstPerson) {
                 showRightArm = showRightArm && !FirstPersonRenderHelper.isAttackingWithOffHand;
                 showLeftArm = showLeftArm && FirstPersonRenderHelper.isAttackingWithOffHand;
             }
             if (entity.getMainArm() == Arm.LEFT) {
-                var rightValue = showRightArm;
-                var leftValue = showLeftArm;
+                boolean rightValue = showRightArm;
+                boolean leftValue = showLeftArm;
                 showRightArm = leftValue;
                 showLeftArm = rightValue;
             }

@@ -7,10 +7,6 @@ pluginManagement {
     }
 }
 
-if (JavaVersion.current().ordinal() + 1 < 17) {
-    throw new IllegalStateException("Please run gradle with Java 17+!")
-}
-
 include("common")
 include("fabric")
 include("forge")

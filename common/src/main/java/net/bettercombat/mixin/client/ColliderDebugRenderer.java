@@ -1,6 +1,7 @@
 package net.bettercombat.mixin.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.bettercombat.api.AttackHand;
 import net.bettercombat.api.WeaponAttributes;
 import net.bettercombat.api.MinecraftClient_BetterCombat;
 import net.bettercombat.client.collision.OrientedBoundingBox;
@@ -11,6 +12,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.debug.DebugRenderer;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
@@ -40,9 +42,9 @@ public class ColliderDebugRenderer {
         if (client.player.getMainHandStack() == null) {
             return;
         }
-        var extendedClient = (MinecraftClient_BetterCombat)client;
-        var comboCount = extendedClient.getComboCount();
-        var hand = PlayerAttackHelper.getCurrentAttack(client.player, comboCount);
+        MinecraftClient_BetterCombat extendedClient = (MinecraftClient_BetterCombat)client;
+        int comboCount = extendedClient.getComboCount();
+        AttackHand hand = PlayerAttackHelper.getCurrentAttack(client.player, comboCount);
         if (hand == null) {
             return;
         }
@@ -50,15 +52,15 @@ public class ColliderDebugRenderer {
         if (attributes == null) {
             return;
         }
-        var cursorTarget = extendedClient.getCursorTarget();
-        var target = TargetFinder.findAttackTargetResult(
+        Entity cursorTarget = extendedClient.getCursorTarget();
+        TargetFinder.TargetResult target = TargetFinder.findAttackTargetResult(
                 player,
                 cursorTarget,
                 hand.attack(),
                 attributes.attackRange());
         boolean collides = target.entities.size() > 0;
         Vec3d cameraOffset = camera.getPos().negate();
-        var obb = target.obb.
+        OrientedBoundingBox obb = target.obb.
                 copy()
                 .offset(cameraOffset)
                 .updateVertex();
@@ -73,13 +75,14 @@ public class ColliderDebugRenderer {
 
     private void drawOutline(OrientedBoundingBox obb, List<OrientedBoundingBox> otherObbs, boolean collides) {
         RenderSystem.enableDepthTest();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        // TODO?
+        // RenderSystem.setShader(GameRenderer::getPositionColorShader);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
         RenderSystem.disableTexture();
         RenderSystem.disableBlend();
         RenderSystem.lineWidth(1.0f);
-        bufferBuilder.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
+        bufferBuilder.begin(3, VertexFormats.POSITION_COLOR);
 
         if (collides) {
             outlineOBB(obb, bufferBuilder,

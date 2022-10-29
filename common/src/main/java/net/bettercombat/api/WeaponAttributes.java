@@ -222,7 +222,7 @@ public final class WeaponAttributes {
         public boolean equals(Object obj) {
             if (obj == this) return true;
             if (obj == null || obj.getClass() != this.getClass()) return false;
-            var that = (Attack) obj;
+            Attack that = (Attack) obj;
             return Objects.equals(this.hitbox, that.hitbox) &&
                     Double.doubleToLongBits(this.damage_multiplier) == Double.doubleToLongBits(that.damage_multiplier) &&
                     Double.doubleToLongBits(this.angle) == Double.doubleToLongBits(that.angle) &&
@@ -358,7 +358,7 @@ public final class WeaponAttributes {
         public boolean equals(Object obj) {
             if (obj == this) return true;
             if (obj == null || obj.getClass() != this.getClass()) return false;
-            var that = (Sound) obj;
+            Sound that = (Sound) obj;
             return Objects.equals(this.id, that.id) &&
                     Float.floatToIntBits(this.volume) == Float.floatToIntBits(that.volume) &&
                     Float.floatToIntBits(this.pitch) == Float.floatToIntBits(that.pitch) &&
@@ -419,7 +419,7 @@ public final class WeaponAttributes {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (WeaponAttributes) obj;
+        WeaponAttributes that = (WeaponAttributes) obj;
         return Double.doubleToLongBits(this.attack_range) == Double.doubleToLongBits(that.attack_range) &&
                 Objects.equals(this.pose, that.pose) &&
                 Objects.equals(this.two_handed, that.two_handed) &&

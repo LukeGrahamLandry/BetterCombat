@@ -6,12 +6,12 @@
 # The name of the mod loader type to load - for regular FML @Mod mods it should be javafml
 modLoader="javafml" #mandatory
 # A version range to match for said mod loader - for regular FML @Mod it will be the forge version
-loaderVersion="[39,)"
+loaderVersion="[36,)"
 
 # A URL to refer people to when problems occur with this mod
 #issueTrackerURL="" #optional
 
-displayURL="https://github.com/ZsoltMolnarrr/BetterCombat"
+displayURL="https://github.com/LukeGrahamLandry/BetterCombat"
 
 license="GPL-3.0"
 
@@ -37,6 +37,8 @@ authors="Daedelus" #optional
 # The description text for the mod (multi line!) (#mandatory)
 description='''
 Easy, spectacular and fun melee combat system from Minecraft Dungeons.
+
+This is an unofficial build of Better Combat! Back ported to 1.16.5 by LukeGrahamLandry. Please don't bother Daedelus with support requests.
 '''
 
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
@@ -46,7 +48,7 @@ modId="forge" #mandatory
 # Does this dependency have to exist - if not, ordering below must be specified
 mandatory=true #mandatory
 # The version range of the dependency
-versionRange="[39,)" #mandatory
+versionRange="[36,)" #mandatory
 # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
 ordering="NONE"
 # Side this dependency is applied on - BOTH, CLIENT or SERVER
@@ -55,7 +57,7 @@ side="BOTH"
 [[dependencies.bettercombat]]
 modId="minecraft"
 mandatory=true
-versionRange="[1.18,)"
+versionRange="[1.16,)"
 ordering="NONE"
 side="BOTH"
 [[dependencies.bettercombat]]
@@ -65,8 +67,8 @@ versionRange="[0.3.5,)"
 ordering="AFTER"
 side="BOTH"
 [[dependencies.bettercombat]]
-modId="cloth_config"
+modId="forgedfabric"
 mandatory=true
-versionRange="[6.0.0,)"
+versionRange="[0.0.5+1.16,)"
 ordering="AFTER"
 side="BOTH"

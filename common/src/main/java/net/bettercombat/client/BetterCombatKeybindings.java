@@ -3,6 +3,7 @@ package net.bettercombat.client;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class BetterCombatKeybindings {
@@ -23,6 +24,6 @@ public class BetterCombatKeybindings {
                 InputUtil.UNKNOWN_KEY.getCode(),
                 "Better Combat");
 
-        all = List.of(feintKeyBinding, toggleMineKeyBinding);
+        all = Arrays.asList(feintKeyBinding, toggleMineKeyBinding);
     }
 }

@@ -159,7 +159,7 @@ public class OrientedBoundingBox {
     }
 
     public boolean intersects(Box boundingBox) {
-        var otherOBB = new OrientedBoundingBox(boundingBox).updateVertex();
+        OrientedBoundingBox otherOBB = new OrientedBoundingBox(boundingBox).updateVertex();
         return Intersects(this, otherOBB);
     }
 
@@ -215,25 +215,25 @@ public class OrientedBoundingBox {
         if (axis.equals(Vec3d.ZERO))
             return false;
 
-        var aMin = Double.POSITIVE_INFINITY;
-        var aMax = Double.NEGATIVE_INFINITY;
-        var bMin = Double.POSITIVE_INFINITY;
-        var bMax = Double.NEGATIVE_INFINITY;
+        double aMin = Double.POSITIVE_INFINITY;
+        double aMax = Double.NEGATIVE_INFINITY;
+        double bMin = Double.POSITIVE_INFINITY;
+        double bMax = Double.NEGATIVE_INFINITY;
 
         // Define two intervals, a and b. Calculate their min and max values
-        for (var i = 0; i < 8; i++)
+        for (int i = 0; i < 8; i++)
         {
-            var aDist = vertsA[i].dotProduct(axis);
+            double aDist = vertsA[i].dotProduct(axis);
             aMin = (aDist < aMin) ? aDist : aMin;
             aMax = (aDist > aMax) ? aDist : aMax;
-            var bDist = vertsB[i].dotProduct(axis);
+            double bDist = vertsB[i].dotProduct(axis);
             bMin = (bDist < bMin) ? bDist : bMin;
             bMax = (bDist > bMax) ? bDist : bMax;
         }
 
         // One-dimensional intersection test between a and b
-        var longSpan = Math.max(aMax, bMax) - Math.min(aMin, bMin);
-        var sumSpan = aMax - aMin + bMax - bMin;
+        double longSpan = Math.max(aMax, bMax) - Math.min(aMin, bMin);
+        double sumSpan = aMax - aMin + bMax - bMin;
         return longSpan >= sumSpan; // > to treat touching as intersection
     }
 }

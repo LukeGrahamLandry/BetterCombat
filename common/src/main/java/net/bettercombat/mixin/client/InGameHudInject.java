@@ -22,12 +22,12 @@ public abstract class InGameHudInject {
 
     private void setShaderForHighlighting() {
         if(((MinecraftClient_BetterCombat)MinecraftClient.getInstance()).hasTargetsInRange()) {
-            var color = BetterCombatClient.config.hudHighlightColor;
+            int color = BetterCombatClient.config.hudHighlightColor;
             float red = ((float) ((color >> 16) & 0xFF)) / 255F;
             float green = ((float) ((color >> 8) & 0xFF)) / 255F;
             float blue = ((float) (color & 0xFF)) / 255F;
             float alpha = 0.5F;
-            RenderSystem.setShaderColor(red, green, blue, alpha);
+            RenderSystem.color4f(red, green, blue, alpha);
         }
     }
 }

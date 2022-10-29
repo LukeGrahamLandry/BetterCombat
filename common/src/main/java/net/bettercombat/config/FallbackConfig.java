@@ -18,7 +18,7 @@ public class FallbackConfig {
     }
 
     public static FallbackConfig createDefault() {
-        var object = new FallbackConfig();
+        FallbackConfig object = new FallbackConfig();
         object.schema_version = 1;
         object.blacklist_item_id_regex = "pickaxe|farmersdelight";
         object.fallback_compatibility = new CompatibilitySpecifier[] {

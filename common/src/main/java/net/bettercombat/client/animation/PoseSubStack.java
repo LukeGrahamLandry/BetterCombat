@@ -31,11 +31,11 @@ public class PoseSubStack {
     }
 
     public void setPose(@Nullable KeyframeAnimation pose, boolean isLeftHanded) {
-        var mirror = isLeftHanded;
+        boolean mirror = isLeftHanded;
         if (!isMainHand) {
             mirror = !mirror;
         }
-        var newPoseData = PoseData.from(pose, mirror);
+        PoseData newPoseData = PoseData.from(pose, mirror);
         if (lastPose != null && newPoseData.equals(lastPose)) {
             return;
         }
@@ -45,7 +45,7 @@ public class PoseSubStack {
                     AbstractFadeModifier.standardFadeIn(5, Ease.INOUTSINE), null);
             lastAnimationUsesBodyChannel = false;
         } else {
-            var copy = pose.mutableCopy();
+            KeyframeAnimation.AnimationBuilder copy = pose.mutableCopy();
             if (this.configure != null) {
                 this.configure.accept(copy);
             }
@@ -61,7 +61,7 @@ public class PoseSubStack {
                 StateCollectionHelper.configure(copy.rightLeg, false, false);
                 StateCollectionHelper.configure(copy.leftLeg, false, false);
             }
-            var animation = copy.build();
+            KeyframeAnimation animation = copy.build();
             this.mirror.setEnabled(mirror);
             this.base.replaceAnimationWithFade(
                     AbstractFadeModifier.standardFadeIn(5, Ease.INOUTSINE),

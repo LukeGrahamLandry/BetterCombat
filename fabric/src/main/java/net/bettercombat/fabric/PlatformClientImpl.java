@@ -9,7 +9,7 @@ import java.util.List;
 
 public class PlatformClientImpl {
     public static void registerKeyBindings(List<KeyBinding> keyBindings) {
-        for(var keybinding: keyBindings) {
+        for(KeyBinding keybinding: keyBindings) {
             KeyBindingHelper.registerKeyBinding(keybinding);
         }
     }

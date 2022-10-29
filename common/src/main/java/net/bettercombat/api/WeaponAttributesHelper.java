@@ -6,6 +6,7 @@ import com.google.gson.stream.JsonReader;
 import net.bettercombat.logic.ItemStackNBTWeaponAttributes;
 import net.bettercombat.logic.WeaponRegistry;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -17,20 +18,20 @@ import java.util.ArrayList;
 
 public class WeaponAttributesHelper {
     public static WeaponAttributes override(WeaponAttributes a, WeaponAttributes b) {
-        var attackRange = b.attackRange() > 0 ? b.attackRange() : a.attackRange();
-        var pose = b.pose() != null ? b.pose() : a.pose();
-        var off_hand_pose = b.offHandPose() != null ? b.offHandPose() : a.offHandPose();
-        var isTwoHanded = b.two_handed() != null ? b.two_handed() : a.two_handed();
-        var category = b.category() != null ? b.category() : a.category();
-        var attacks = a.attacks();
+        double attackRange = b.attackRange() > 0 ? b.attackRange() : a.attackRange();
+        String pose = b.pose() != null ? b.pose() : a.pose();
+        String off_hand_pose = b.offHandPose() != null ? b.offHandPose() : a.offHandPose();
+        Boolean isTwoHanded = b.two_handed() != null ? b.two_handed() : a.two_handed();
+        String category = b.category() != null ? b.category() : a.category();
+        WeaponAttributes.Attack[] attacks = a.attacks();
         if (b.attacks() != null && b.attacks().length > 0) {
-            var overrideAttacks = new ArrayList<WeaponAttributes.Attack>();
+            ArrayList<WeaponAttributes.Attack> overrideAttacks = new ArrayList<WeaponAttributes.Attack>();
             for(int i = 0; i < b.attacks().length; ++i) {
-                var base = (a.attacks() != null && a.attacks().length > i)
+                WeaponAttributes.Attack base = (a.attacks() != null && a.attacks().length > i)
                         ? a.attacks()[i]
                         : new WeaponAttributes.Attack(null, null, 0, 0, 0, null, null, null);
-                var override = b.attacks()[i];
-                var attack = new WeaponAttributes.Attack(
+                WeaponAttributes.Attack override = b.attacks()[i];
+                WeaponAttributes.Attack attack = new WeaponAttributes.Attack(
                         override.conditions() != null ? override.conditions() : base.conditions(),
                         override.hitbox() != null ? override.hitbox() : base.hitbox(),
                         override.damageMultiplier() != 0 ? override.damageMultiplier() : base.damageMultiplier(),
@@ -53,12 +54,12 @@ public class WeaponAttributesHelper {
         if (attributes.attacks().length == 0) {
             throw new InvalidObjectException("Empty `attacks` array");
         }
-        var index = 0;
+        int index = 0;
         for (WeaponAttributes.Attack attack : attributes.attacks()) {
             try {
                 validate(attack);
             } catch(InvalidObjectException exception) {
-                var message = "Invalid attack at index:" + index + " - " + exception.getMessage();
+                String message = "Invalid attack at index:" + index + " - " + exception.getMessage();
                 throw new InvalidObjectException(message);
             }
             index += 1;
@@ -85,20 +86,20 @@ public class WeaponAttributesHelper {
 
     public static final String nbtTag = "weapon_attributes";
     public static WeaponAttributes readFromNBT(ItemStack itemStack) {
-        var nbt = itemStack.getNbt();
-        var attributedItemStack = (ItemStackNBTWeaponAttributes) ((Object)itemStack);
-        var string = nbt.getString(nbtTag);
+        NbtCompound nbt = itemStack.getTag();
+        ItemStackNBTWeaponAttributes attributedItemStack = (ItemStackNBTWeaponAttributes) ((Object)itemStack);
+        String string = nbt.getString(nbtTag);
         if (string != null && !string.isEmpty() && !attributedItemStack.hasInvalidAttributes()) {
-            var cachedAttributes = attributedItemStack.getWeaponAttributes();
+            WeaponAttributes cachedAttributes = attributedItemStack.getWeaponAttributes();
             if(cachedAttributes != null) {
                 // System.out.println("NBT Attributes - Cache");
                 return cachedAttributes;
             }
             Identifier itemId = Registry.ITEM.getId(itemStack.getItem());
             try {
-                var json = new StringReader(string);
-                var container = decode(json);
-                var attributes = WeaponRegistry.resolveAttributes(itemId, container);
+                StringReader json = new StringReader(string);
+                AttributesContainer container = decode(json);
+                WeaponAttributes attributes = WeaponRegistry.resolveAttributes(itemId, container);
                 if (attributes == null) {
                     attributedItemStack.setInvalidAttributes(true);
                 }
@@ -116,10 +117,10 @@ public class WeaponAttributesHelper {
 
     public static void writeToNBT(ItemStack itemStack, AttributesContainer container) {
         Identifier itemId = Registry.ITEM.getId(itemStack.getItem());
-        var attributedItemStack = (ItemStackNBTWeaponAttributes) ((Object)itemStack);
-        var nbt = itemStack.getNbt();
+        ItemStackNBTWeaponAttributes attributedItemStack = (ItemStackNBTWeaponAttributes) ((Object)itemStack);
+        NbtCompound nbt = itemStack.getTag();
         try {
-            var json = encode(container);
+            String json = encode(container);
             nbt.putString(nbtTag, json);
             attributedItemStack.setInvalidAttributes(false);
             attributedItemStack.setWeaponAttributes(null);
@@ -132,19 +133,19 @@ public class WeaponAttributesHelper {
     private static Type attributesContainerFileFormat = new TypeToken<AttributesContainer>() {}.getType();
 
     public static AttributesContainer decode(Reader reader) {
-        var gson = new Gson();
+        Gson gson = new Gson();
         AttributesContainer container = gson.fromJson(reader, attributesContainerFileFormat);
         return container;
     }
 
     public static AttributesContainer decode(JsonReader json) {
-        var gson = new Gson();
+        Gson gson = new Gson();
         AttributesContainer container = gson.fromJson(json, attributesContainerFileFormat);
         return container;
     }
 
     public static String encode(AttributesContainer container) {
-        var gson = new Gson();
+        Gson gson = new Gson();
         return gson.toJson(container);
     }
 }

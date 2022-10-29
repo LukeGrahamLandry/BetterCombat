@@ -32,8 +32,9 @@ public class LivingEntityRendererMixin {
                 && !camera.isThirdPerson()
         ) {
             // Only for IExtendedAnimation (weapon swings)
-            var isActive = false; // currentAnimation.get().isActive();
-            if (currentAnimation.get() instanceof IExtendedAnimation extendedAnimation) {
+            boolean isActive = false; // currentAnimation.get().isActive();
+            if (currentAnimation.get() instanceof IExtendedAnimation) {
+                IExtendedAnimation extendedAnimation = (IExtendedAnimation) currentAnimation.get();
                 isActive = extendedAnimation.isActiveInFirstPerson();
             }
 

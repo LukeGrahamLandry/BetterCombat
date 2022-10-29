@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import net.bettercombat.BetterCombat;
 import net.bettercombat.api.AttackHand;
 import net.bettercombat.api.EntityPlayer_BetterCombat;
+import net.bettercombat.api.WeaponAttributes;
 import net.bettercombat.client.PlayerAttackAnimatable;
 import net.bettercombat.logic.PlayerAttackHelper;
 import net.bettercombat.logic.PlayerAttackProperties;
@@ -38,7 +39,7 @@ public abstract class PlayerEntityMixin implements PlayerAttackProperties, Entit
 
     @Inject(method = "tick", at = @At("TAIL"))
     public void post_Tick(CallbackInfo ci) {
-        var instance = (Object)this;
+        Object instance = (Object)this;
         if (((PlayerEntity)instance).world.isClient()) {
             ((PlayerAttackAnimatable) this).updateAnimationsOnTick();
         }
@@ -53,8 +54,8 @@ public abstract class PlayerEntityMixin implements PlayerAttackProperties, Entit
             return value;
         }
 
-        var player = ((PlayerEntity) ((Object)this));
-        var currentHand = PlayerAttackHelper.getCurrentAttack(player, comboCount);
+        PlayerEntity player = ((PlayerEntity) ((Object)this));
+        AttackHand currentHand = PlayerAttackHelper.getCurrentAttack(player, comboCount);
         if (currentHand != null) {
             // Disable sweeping
             return false;
@@ -69,12 +70,12 @@ public abstract class PlayerEntityMixin implements PlayerAttackProperties, Entit
 //        PlayerEntity playerEntity = (PlayerEntity) ((Object)this);
 //        // Create a list with sword sweep sounds
 //        List<Identifier> swordSweepSounds = new ArrayList<>();
-//        swordSweepSounds.add(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP.getId());
-//        swordSweepSounds.add(SoundEvents.ENTITY_PLAYER_ATTACK_WEAK.getId());
-//        swordSweepSounds.add(SoundEvents.ENTITY_PLAYER_ATTACK_STRONG.getId());
-//        swordSweepSounds.add(SoundEvents.ENTITY_PLAYER_ATTACK_CRIT.getId());
+//        swordSweepSounds.add(SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP.getEntityId());
+//        swordSweepSounds.add(SoundEvents.ENTITY_PLAYER_ATTACK_WEAK.getEntityId());
+//        swordSweepSounds.add(SoundEvents.ENTITY_PLAYER_ATTACK_STRONG.getEntityId());
+//        swordSweepSounds.add(SoundEvents.ENTITY_PLAYER_ATTACK_CRIT.getEntityId());
 //        // If the player has on the main hand a sword and the event for the sound is any of the attack sounds
-//        if (playerEntity.getMainHandStack().getItem() instanceof SwordItem && swordSweepSounds.contains(soundEvent.getId())) {
+//        if (playerEntity.getMainHandStack().getItem() instanceof SwordItem && swordSweepSounds.contains(soundEvent.getEntityId())) {
 //            // Play an anvil landing sound
 //            instance.playSound(null, x, y, z, SoundEvents.BLOCK_ANVIL_LAND, soundCategory, volume, pitch);
 //        } else {
@@ -87,16 +88,16 @@ public abstract class PlayerEntityMixin implements PlayerAttackProperties, Entit
 
     @Inject(method = "getEquippedStack", at = @At("HEAD"), cancellable = true)
     public void getEquippedStack_Pre(EquipmentSlot slot, CallbackInfoReturnable<ItemStack> cir) {
-        var mainHandHasTwoHanded = false;
-        var mainHandStack = ((PlayerEntityAccessor) this).getInventory().getMainHandStack();
-        var mainHandAttributes = WeaponRegistry.getAttributes(mainHandStack);
+        boolean mainHandHasTwoHanded = false;
+        ItemStack mainHandStack = ((PlayerEntityAccessor) this).getInventory().getMainHandStack();
+        WeaponAttributes mainHandAttributes = WeaponRegistry.getAttributes(mainHandStack);
         if (mainHandAttributes != null && mainHandAttributes.isTwoHanded()) {
             mainHandHasTwoHanded = true;
         }
 
-        var offHandHasTwoHanded = false;
-        var offHandStack = ((PlayerEntityAccessor)this).getInventory().offHand.get(0);
-        var offHandAttributes = WeaponRegistry.getAttributes(offHandStack);
+        boolean offHandHasTwoHanded = false;
+        ItemStack offHandStack = ((PlayerEntityAccessor)this).getInventory().offHand.get(0);
+        WeaponAttributes offHandAttributes = WeaponRegistry.getAttributes(offHandStack);
         if(offHandAttributes != null && offHandAttributes.isTwoHanded()) {
             offHandHasTwoHanded = true;
         }
@@ -116,9 +117,9 @@ public abstract class PlayerEntityMixin implements PlayerAttackProperties, Entit
     private static UUID dualWieldingSpeedModifierId = UUID.fromString("6b364332-0dc4-11ed-861d-0242ac120002");
 
     private void updateDualWieldingSpeedBoost() {
-        var player = ((PlayerEntity) ((Object)this));
-        var newState = PlayerAttackHelper.isDualWielding(player);
-        var currentState = dualWieldingAttributeMap != null;
+        PlayerEntity player = ((PlayerEntity) ((Object)this));
+        boolean newState = PlayerAttackHelper.isDualWielding(player);
+        boolean currentState = dualWieldingAttributeMap != null;
         if (newState != currentState) {
             if(newState) {
                 // Just started dual wielding
@@ -149,8 +150,8 @@ public abstract class PlayerEntityMixin implements PlayerAttackProperties, Entit
             target = "Lnet/minecraft/entity/player/PlayerEntity;getStackInHand(Lnet/minecraft/util/Hand;)Lnet/minecraft/item/ItemStack;"),
             index = 0)
     public Hand getHand(Hand hand) {
-        var player = ((PlayerEntity) ((Object)this) );
-        var currentHand = PlayerAttackHelper.getCurrentAttack(player, comboCount);
+        PlayerEntity player = ((PlayerEntity) ((Object)this) );
+        AttackHand currentHand = PlayerAttackHelper.getCurrentAttack(player, comboCount);
         if (currentHand != null) {
             return currentHand.isOffHand() ? Hand.OFF_HAND : Hand.MAIN_HAND;
         } else {
@@ -171,9 +172,9 @@ public abstract class PlayerEntityMixin implements PlayerAttackProperties, Entit
             // Vanilla behaviour
             return instance.getMainHandStack();
         }
-        var hand = PlayerAttackHelper.getCurrentAttack(instance, comboCount);
+        AttackHand hand = PlayerAttackHelper.getCurrentAttack(instance, comboCount);
         if (hand == null) {
-            var isOffHand = PlayerAttackHelper.shouldAttackWithOffHand(instance, comboCount);
+            boolean isOffHand = PlayerAttackHelper.shouldAttackWithOffHand(instance, comboCount);
             if (isOffHand) {
                 return ItemStack.EMPTY;
             } else {
@@ -203,7 +204,7 @@ public abstract class PlayerEntityMixin implements PlayerAttackProperties, Entit
             instance.setStackInHand(handArg, itemStack);
             return;
         }
-        var redirectedHand = hand.isOffHand() ? Hand.OFF_HAND : Hand.MAIN_HAND;
+        Hand redirectedHand = hand.isOffHand() ? Hand.OFF_HAND : Hand.MAIN_HAND;
         instance.setStackInHand(redirectedHand, itemStack);
     }
 
@@ -214,7 +215,7 @@ public abstract class PlayerEntityMixin implements PlayerAttackProperties, Entit
         if (comboCount < 0) {
             return null;
         }
-        var player = ((PlayerEntity) ((Object)this));
+        PlayerEntity player = ((PlayerEntity) ((Object)this));
         return PlayerAttackHelper.getCurrentAttack(player, comboCount);
     }
 }

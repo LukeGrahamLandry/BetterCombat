@@ -5,8 +5,8 @@ import net.minecraft.util.math.Vec3d;
 
 public class CollisionHelper {
     public static double angleBetween(Vec3d a, Vec3d b) {
-        var cosineTheta = a.dotProduct(b) / (a.length() * b.length());
-        var angle = Math.acos(cosineTheta) * (180.0 / Math.PI);
+        double cosineTheta = a.dotProduct(b) / (a.length() * b.length());
+        double angle = Math.acos(cosineTheta) * (180.0 / Math.PI);
         if (Double.isNaN(angle)) {
             return 0;
         }

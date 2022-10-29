@@ -32,8 +32,9 @@ public class HeldItemRendererMixin {
         }
         Optional<IAnimation> currentAnimation = ((PlayerAttackAnimatable) player).getCurrentAnimation();
         if (currentAnimation.isPresent()) {
-            var isActive = currentAnimation.get().isActive();
-            if (currentAnimation.get() instanceof IExtendedAnimation extendedAnimation) {
+            boolean isActive = currentAnimation.get().isActive();
+            if (currentAnimation.get() instanceof IExtendedAnimation) {
+                IExtendedAnimation extendedAnimation = (IExtendedAnimation) currentAnimation.get();
                 isActive = extendedAnimation.isActiveInFirstPerson();
             }
 
@@ -46,13 +47,13 @@ public class HeldItemRendererMixin {
     @Inject(method = "renderItem(Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformation$Mode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V",
             at = @At("HEAD"), cancellable = true)
     private void renderItem_HEAD(LivingEntity entity, ItemStack stack, ModelTransformation.Mode renderMode, boolean leftHanded, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
-        var player = MinecraftClient.getInstance().player;
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
         if (entity != player) {
             return;
         }
         if (FirstPersonRenderHelper.isRenderingFirstPersonPlayerModel) {
             if (!BetterCombatClient.config.isShowingOtherHandFirstPerson) {
-                var isMainHandStack = player.getMainHandStack() == stack;
+                boolean isMainHandStack = player.getMainHandStack() == stack;
                 if (FirstPersonRenderHelper.isAttackingWithOffHand) {
                     if (isMainHandStack) {
                         ci.cancel();

@@ -1,8 +1,5 @@
 plugins {
     id "com.github.johnrengelman.shadow" version "7.1.2"
-    id "me.shedaniel.unified-publishing"
-    id "com.matthewprenger.cursegradle"
-    id "com.modrinth.minotaur"
 }
 
 loom {
@@ -28,6 +25,10 @@ repositories {
     maven { url 'https://maven.shedaniel.me/' }
     maven { url 'https://maven.kosmx.dev/' }
     maven { url 'https://jitpack.io' }
+
+    flatDir {
+        dirs '../libs'
+    }
 }
 
 dependencies {
@@ -37,9 +38,9 @@ dependencies {
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive false }
 
     modImplementation("dev.kosmx.player-anim:player-animation-lib-forge:${project.player_anim_version}")
-    modApi("me.shedaniel.cloth:cloth-config-forge:${project.cloth_config_version}")
+    modImplementation("me.shedaniel.cloth:cloth-config-forge:${project.cloth_config_version}")
 
-    shadowCommon(common("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}"))
+    modImplementation "ca.lukegrahamlandry.forgedfabric:forgedfabric:0.0.5+1.16"
 }
 
 processResources {
@@ -52,8 +53,6 @@ processResources {
 shadowJar {
     configurations = [project.configurations.shadowCommon]
     classifier "dev-shadow"
-    relocate 'net.fabricmc', 'net.bettercombat.fabricmc'
-    relocate 'net.tinyconfig', 'net.bettercombat.tinyconfig'
 }
 
 remapJar {
@@ -75,55 +74,5 @@ assemble.dependsOn renameJarForPublication
 components.java {
     withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
         skip()
-    }
-}
-
-if(project.hasProperty('release_type')) {
-    tasks.register("publishMod") {
-        dependsOn(build)
-        finalizedBy(tasks.curseforge)
-        finalizedBy(tasks.modrinth)
-    }
-
-    curseforge {
-        apiKey = System.getenv("CURSEFORGE_API_KEY")
-        project {
-            id = '639842'
-            changelog = ''
-            releaseType = release_type
-            addGameVersion "1.18.2"
-            addGameVersion "Forge"
-
-            relations {
-                requiredDependency 'cloth-config'
-                requiredDependency 'playeranimator'
-            }
-
-            mainArtifact(remapJar)
-            afterEvaluate {
-                uploadTask.dependsOn(remapJar)
-            }
-            options {
-                forgeGradleIntegration = false
-            }
-        }
-    }
-
-    modrinth {
-        token = System.getenv("MODRINTH_API_KEY")
-        projectId = "better-combat" // This can be the project ID or the slug. Either will work!
-        versionName = "${project.version}"
-        versionNumber = "${project.version}-forge" // You don't need to set this manually. Will fail if Modrinth has this version already
-        versionType = release_type // This is the default -- can also be `beta` or `alpha`
-        uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
-        gameVersions = ["1.18.2"] // Must be an array, even with only one version
-        loaders = ["forge"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
-        dependencies { // A special DSL for creating dependencies
-            // scope.type
-            // The scope can be `required`, `optional`, `incompatible`, or `embedded`
-            // The type can either be `project` or `version`
-            required.project "cloth-config"
-            required.project "playeranimator"
-        }
     }
 }

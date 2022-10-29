@@ -1,6 +1,7 @@
 package net.bettercombat.mixin.client;
 
 import com.mojang.authlib.GameProfile;
+import dev.kosmx.playerAnim.api.layered.AnimationStack;
 import dev.kosmx.playerAnim.api.layered.IAnimation;
 import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
 import dev.kosmx.playerAnim.api.layered.ModifierLayer;
@@ -9,6 +10,7 @@ import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import dev.kosmx.playerAnim.core.util.Ease;
 import dev.kosmx.playerAnim.core.util.Vec3f;
 import dev.kosmx.playerAnim.impl.IAnimatedPlayer;
+import net.bettercombat.api.WeaponAttributes;
 import net.bettercombat.api.animation.FirstPersonAnimation;
 import net.bettercombat.api.animation.FirstPersonAnimator;
 import net.bettercombat.client.AnimationRegistry;
@@ -19,6 +21,7 @@ import net.bettercombat.logic.WeaponRegistry;
 import net.bettercombat.mixin.LivingEntityAccessor;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Arm;
 import net.minecraft.util.math.BlockPos;
@@ -46,7 +49,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void postInit(ClientWorld world, GameProfile profile, CallbackInfo ci) {
-        var stack = ((IAnimatedPlayer) this).getAnimationStack();
+        AnimationStack stack = ((IAnimatedPlayer) this).getAnimationStack();
         stack.addAnimLayer(1, offHandItemPose.base);
         stack.addAnimLayer(2, offHandBodyPose.base);
         stack.addAnimLayer(3, mainHandItemPose.base);
@@ -59,9 +62,9 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 
     @Override
     public void updateAnimationsOnTick() {
-        var instance = (Object)this;
-        var player = (PlayerEntity)instance;
-        var isLeftHanded = isLeftHanded();
+        Object instance = (Object)this;
+        PlayerEntity player = (PlayerEntity)instance;
+        boolean isLeftHanded = isLeftHanded();
 
         // No pose during mining or item usage
 
@@ -80,14 +83,14 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         // Pose
 
         KeyframeAnimation newMainHandPose = null;
-        var mainHandAttributes = WeaponRegistry.getAttributes(player.getMainHandStack());
+        WeaponAttributes mainHandAttributes = WeaponRegistry.getAttributes(player.getMainHandStack());
         if (mainHandAttributes != null && mainHandAttributes.pose() != null) {
             newMainHandPose = AnimationRegistry.animations.get(mainHandAttributes.pose());
         }
 
         KeyframeAnimation newOffHandPose = null;
         if (PlayerAttackHelper.isDualWielding(player)) {
-            var offHandAttributes = WeaponRegistry.getAttributes(player.getOffHandStack());
+            WeaponAttributes offHandAttributes = WeaponRegistry.getAttributes(player.getOffHandStack());
             if (offHandAttributes != null && offHandAttributes.offHandPose() != null) {
                 newOffHandPose = AnimationRegistry.animations.get(offHandAttributes.offHandPose());
             }
@@ -110,17 +113,17 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     public void playAttackAnimation(String name, boolean isOffHand, float length) {
         try {
             KeyframeAnimation animation = AnimationRegistry.animations.get(name);
-            var copy = animation.mutableCopy();
+            KeyframeAnimation.AnimationBuilder copy = animation.mutableCopy();
             updateAnimationByCurrentActivity(copy);
             copy.torso.fullyEnablePart(true);
             copy.head.pitch.setEnabled(false);
-            var speed = ((float)animation.endTick) / length;
-            var mirror = isOffHand;
+            float speed = ((float)animation.endTick) / length;
+            boolean mirror = isOffHand;
             if(isLeftHanded()) {
                 mirror = !mirror;
             }
 
-            var fadeIn = copy.beginTick;
+            int fadeIn = copy.beginTick;
             attackAnimation.speed.speed = speed;
             attackAnimation.mirror.setEnabled(mirror);
             attackAnimation.base.replaceAnimationWithFade(
@@ -132,9 +135,9 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     }
 
     private AdjustmentModifier createAttackAdjustment() {
-        var player = (PlayerEntity)this;
+        PlayerEntity player = (PlayerEntity)this;
         return new AdjustmentModifier((partName) -> {
-            // System.out.println("Player pitch: " + player.getPitch());
+            // System.out.println("Player pitch: " + player.getPitch(1));
             float rotationX = 0;
             float rotationY = 0;
             float rotationZ = 0;
@@ -143,32 +146,24 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             float offsetZ = 0;
 
             if (FirstPersonAnimation.isRenderingAttackAnimationInFirstPerson()) {
-                var pitch = player.getPitch();
+                float pitch = player.getPitch(1);
                 pitch = (float) Math.toRadians(pitch);
-                switch (partName) {
-                    case "rightArm", "leftArm" -> {
-                        rotationX = pitch;
-                    }
-                    default -> {
-                        return Optional.empty();
-                    }
+                if ("rightArm".equals(partName) || "leftArm".equals(partName)) {
+                    rotationX = pitch;
+                } else {
+                    return Optional.empty();
                 }
             } else {
-                var pitch = player.getPitch() / 2F;
+                float pitch = player.getPitch(1) / 2F;
                 pitch = (float) Math.toRadians(pitch);
-                switch (partName) {
-                    case "body" -> {
-                        rotationX = (-1F) * pitch;
-                    }
-                    case "rightArm", "leftArm" -> {
-                        rotationX = pitch;
-                    }
-                    case "rightLeg", "leftLeg" -> {
-                        rotationX = (-1F) * pitch;
-                    }
-                    default -> {
-                        return Optional.empty();
-                    }
+                if ("body".equals(partName)) {
+                    rotationX = (-1F) * pitch;
+                } else if ("rightArm".equals(partName) || "leftArm".equals(partName)) {
+                    rotationX = pitch;
+                } else if ("rightLeg".equals(partName) || "leftLeg".equals(partName)) {
+                    rotationX = (-1F) * pitch;
+                } else {
+                    return Optional.empty();
                 }
             }
 
@@ -180,7 +175,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     }
 
     private AdjustmentModifier createPoseAdjustment() {
-        var player = (PlayerEntity)this;
+        PlayerEntity player = (PlayerEntity)this;
         return new AdjustmentModifier((partName) -> {
             float rotationX = 0;
             float rotationY = 0;
@@ -190,15 +185,12 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             float offsetZ = 0;
 
             if (!FirstPersonRenderHelper.isRenderingFirstPersonPlayerModel) {
-                switch (partName) {
-                    case "rightArm", "leftArm" -> {
-                        if (!mainHandItemPose.lastAnimationUsesBodyChannel && player.isSneaking()) {
-                            offsetY += 4;
-                        }
+                if ("rightArm".equals(partName) || "leftArm".equals(partName)) {
+                    if (!mainHandItemPose.lastAnimationUsesBodyChannel && player.isSneaking()) {
+                        offsetY += 4;
                     }
-                    default -> {
-                        return Optional.empty();
-                    }
+                } else {
+                    return Optional.empty();
                 }
             }
 
@@ -210,26 +202,17 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     }
 
     private void updateAnimationByCurrentActivity(KeyframeAnimation.AnimationBuilder animation) {
-        var pose = getPose();
-        switch (pose) {
-            case STANDING -> {
-            }
-            case FALL_FLYING -> {
-            }
-            case SLEEPING -> {
-            }
-            case SWIMMING -> {
-                StateCollectionHelper.configure(animation.rightLeg, false, false);
-                StateCollectionHelper.configure(animation.leftLeg, false, false);
-            }
-            case SPIN_ATTACK -> {
-            }
-            case CROUCHING -> {
-            }
-            case LONG_JUMPING -> {
-            }
-            case DYING -> {
-            }
+        EntityPose pose = getPose();
+        if (pose == EntityPose.STANDING) {
+        } else if (pose == EntityPose.FALL_FLYING) {
+        } else if (pose == EntityPose.SLEEPING) {
+        } else if (pose == EntityPose.SWIMMING) {
+            StateCollectionHelper.configure(animation.rightLeg, false, false);
+            StateCollectionHelper.configure(animation.leftLeg, false, false);
+        } else if (pose == EntityPose.SPIN_ATTACK) {
+        } else if (pose == EntityPose.CROUCHING) {
+
+        } else if (pose == EntityPose.DYING) {
         }
         if (isMounting()) {
             StateCollectionHelper.configure(animation.rightLeg, false, false);
@@ -239,7 +222,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 
 
     private boolean isWalking() {
-        return !this.isDead() && (this.isSwimming() || this.getVelocity().horizontalLength() > 0.03);
+        return !this.isDead() && (this.isSwimming() || Math.sqrt(Math.pow(this.getVelocity().x, 2) + Math.pow(this.getVelocity().z, 2)) > 0.03);
     }
 
     private boolean isMounting() {
@@ -263,7 +246,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 
     @Override
     public Optional<IAnimation> getCurrentAnimation() {
-        for (var layer: additionalFirstPersonLayers) {
+        for (ModifierLayer layer: additionalFirstPersonLayers) {
             if (layer.isActive()) {
                 return Optional.ofNullable(layer.getAnimation());
             }

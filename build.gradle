@@ -9,8 +9,6 @@ plugins {
     id "dev.architectury.loom" version "0.12.0-SNAPSHOT" apply false
     id "org.cadixdev.licenser" version "0.6.1"
     id "io.github.juuxel.loom-quiltflower" version "1.7.+" apply false
-    id "me.shedaniel.unified-publishing" version "0.1.+" apply false
-    id "com.modrinth.minotaur" version "2.4.3"
     id "maven-publish"
 }
 
@@ -23,7 +21,7 @@ subprojects {
     apply plugin: "io.github.juuxel.loom-quiltflower"
 
     archivesBaseName = rootProject.archives_base_name + "-${project.name}"
-    version = rootProject.mod_version + "+1.18.2"
+    version = rootProject.mod_version
 
     loom {
         silentMojangMappingsLicense()
@@ -41,12 +39,22 @@ allprojects {
 
     group = rootProject.maven_group
 
+    def targetJavaVersion = 8
     tasks.withType(JavaCompile) {
         options.encoding = "UTF-8"
-        options.release.set 17
+
+        if (JavaVersion.current().isJava9Compatible()) {
+            options.release = targetJavaVersion
+        }
     }
 
     java {
+        def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+        if (JavaVersion.current() < javaVersion) {
+            toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+        }
+        archivesBaseName = project.archives_base_name
+
         withSourcesJar()
     }
 }

@@ -1,6 +1,7 @@
 package net.bettercombat;
 
-import com.mojang.logging.LogUtils;
+import net.bettercombat.mixin.MinecraftServerAccessor;
+import org.apache.logging.log4j.LogManager;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
@@ -15,10 +16,10 @@ import net.bettercombat.utils.SoundHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.tinyconfig.ConfigManager;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 public class BetterCombat implements ModInitializer {
-    static final Logger LOGGER = LogUtils.getLogger();
+    static final Logger LOGGER = LogManager.getLogger();
     public static final String MODID = "bettercombat";
     public static ServerConfig config;
     private static FallbackConfig fallbackDefault = FallbackConfig.createDefault();
@@ -38,7 +39,7 @@ public class BetterCombat implements ModInitializer {
         CompatibilityFlags.initialize();
         ServerNetwork.initializeHandlers();
         ServerLifecycleEvents.SERVER_STARTED.register((minecraftServer) -> {
-            WeaponRegistry.loadAttributes(minecraftServer.getResourceManager());
+            WeaponRegistry.loadAttributes(((MinecraftServerAccessor)minecraftServer).getServerResourceManager().getResourceManager());
             if (config.fallback_compatibility_enabled) {
                 WeaponAttributesFallback.initialize();
             }
@@ -53,8 +54,8 @@ public class BetterCombat implements ModInitializer {
 
     private void loadFallbackConfig() {
         fallbackConfig.load();
-        if (fallbackConfig.currentConfig.schema_version < fallbackDefault.schema_version) {
-            fallbackConfig.currentConfig = FallbackConfig.migrate(fallbackConfig.currentConfig, FallbackConfig.createDefault());
+        if (fallbackConfig.value.schema_version < fallbackDefault.schema_version) {
+            fallbackConfig.value = FallbackConfig.migrate(fallbackConfig.value, FallbackConfig.createDefault());
         }
         fallbackConfig.save();
     }

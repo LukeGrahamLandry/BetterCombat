@@ -17,15 +17,15 @@ public class LivingEntityInject {
 
     @Inject(method = "getAttributeValue",at = @At("HEAD"), cancellable = true)
     public void getAttributeValue_Inject(EntityAttribute attribute, CallbackInfoReturnable<Double> cir) {
-        var object = (Object)this;
+        Object object = (Object)this;
         if (object instanceof PlayerEntity) {
-            var player = (PlayerEntity)object;
-            var comboCount = ((PlayerAttackProperties)player).getComboCount();
+            PlayerEntity player = (PlayerEntity)object;
+            int comboCount = ((PlayerAttackProperties)player).getComboCount();
             if (player.world.isClient
                     && comboCount > 0
                     && PlayerAttackHelper.shouldAttackWithOffHand(player, comboCount)) {
                 PlayerAttackHelper.setAttributesForOffHandAttack(player, true);
-                var value = player.getAttributes().getValue(attribute);
+                double value = player.getAttributes().getValue(attribute);
                 PlayerAttackHelper.setAttributesForOffHandAttack(player, false);
                 cir.cancel();
                 cir.setReturnValue(value);

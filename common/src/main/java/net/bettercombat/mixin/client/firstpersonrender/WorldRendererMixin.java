@@ -40,7 +40,8 @@ public abstract class WorldRendererMixin {
             return;
         }
 
-        if(entity instanceof PlayerEntity player) {
+        if(entity instanceof PlayerEntity) {
+            PlayerEntity player = (PlayerEntity) entity;
             if (player.isSleeping()) {
                 return;
             }
@@ -53,10 +54,11 @@ public abstract class WorldRendererMixin {
             currentAnimation = Optional.empty();
         }
         Camera camera = MinecraftClient.getInstance().gameRenderer.getCamera();
-        var isActive = false;
+        boolean isActive = false;
         if (currentAnimation.isPresent()) {
             isActive = currentAnimation.get().isActive();
-            if (currentAnimation.get() instanceof IExtendedAnimation extendedAnimation) {
+            if (currentAnimation.get() instanceof IExtendedAnimation) {
+                IExtendedAnimation extendedAnimation = (IExtendedAnimation) currentAnimation.get();
                 isActive = extendedAnimation.isActiveInFirstPerson();
             }
         }

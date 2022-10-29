@@ -1,9 +1,12 @@
 package net.bettercombat.client;
 
+import net.bettercombat.api.WeaponAttributes;
 import net.bettercombat.logic.WeaponRegistry;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
@@ -12,20 +15,21 @@ import static net.minecraft.item.ItemStack.MODIFIER_FORMAT;
 public class WeaponAttributeTooltip {
     public static void initialize() {
         ItemTooltipCallback.EVENT.register((itemStack, context, lines) -> {
-            var attributes = WeaponRegistry.getAttributes(itemStack);
+            WeaponAttributes attributes = WeaponRegistry.getAttributes(itemStack);
             if (attributes != null) {
                 // Looking for last attribute line in the list
-                var lastAttributeLine = 0;
-                var firstHandLine = 0;
+                int lastAttributeLine = 0;
+                int firstHandLine = 0;
                 Integer lastGreenAttributeIndex = null;
-                var attributePrefix = "attribute.modifier";
-                var attributeEqualsPrefix = "attribute.modifier.equals.0";
-                var handPrefix = "item.modifiers";
+                String attributePrefix = "attribute.modifier";
+                String attributeEqualsPrefix = "attribute.modifier.equals.0";
+                String handPrefix = "item.modifiers";
                 for (int i = 0; i < lines.size(); i++) {
-                    var line = lines.get(i);
+                    Text line = lines.get(i);
                     // Is this a line like "+1 Something"
-                    if (line instanceof TranslatableText translatableText) {
-                        var key = translatableText.getKey();
+                    if (line instanceof TranslatableText) {
+                        TranslatableText translatableText = (TranslatableText) line;
+                        String key = translatableText.getKey();
                         if (key.startsWith(attributePrefix)) {
                             lastAttributeLine = i;
                         }
@@ -33,8 +37,9 @@ public class WeaponAttributeTooltip {
                             firstHandLine = i;
                         }
                     } else {
-                        for(var part: line.getSiblings()) {
-                            if (part instanceof TranslatableText translatableText) {
+                        for(Text part: line.getSiblings()) {
+                            if (part instanceof TranslatableText ) {
+                                TranslatableText translatableText = (TranslatableText) part;
                                 if (translatableText.getKey().contains(attributeEqualsPrefix)) {
                                     lastGreenAttributeIndex = i;
                                 }
@@ -47,16 +52,16 @@ public class WeaponAttributeTooltip {
                 }
 
                 if (BetterCombatClient.config.isTooltipAttackRangeEnabled) {
-                    var operationId = EntityAttributeModifier.Operation.ADDITION.getId();
-                    var rangeTranslationKey = "attribute.name.generic.attack_range";
-                    var rangeValue = attributes.attackRange();
-                    var rangeLine = new LiteralText(" ").append(new TranslatableText("attribute.modifier.equals." + operationId, MODIFIER_FORMAT.format(rangeValue), new TranslatableText(rangeTranslationKey))).formatted(Formatting.DARK_GREEN);
+                    int operationId = EntityAttributeModifier.Operation.ADDITION.getId();
+                    String rangeTranslationKey = "attribute.name.generic.attack_range";
+                    double rangeValue = attributes.attackRange();
+                    MutableText rangeLine = new LiteralText(" ").append(new TranslatableText("attribute.modifier.equals." + operationId, MODIFIER_FORMAT.format(rangeValue), new TranslatableText(rangeTranslationKey))).formatted(Formatting.DARK_GREEN);
                     int index = lastGreenAttributeIndex != null ? lastGreenAttributeIndex : lastAttributeLine;
                     lines.add(index + 1, rangeLine);
                 }
 
                 if (attributes.isTwoHanded() && firstHandLine > 0) {
-                    var handLine = new TranslatableText("item.modifiers.two_handed").formatted(Formatting.GRAY);
+                    MutableText handLine = new TranslatableText("item.modifiers.two_handed").formatted(Formatting.GRAY);
                     lines.add(firstHandLine, handLine);
                 }
             }
