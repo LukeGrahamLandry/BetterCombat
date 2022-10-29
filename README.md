@@ -1,16 +1,10 @@
 ![Better Combat](./logo.png)
 
-<div align="center">
-
-  <a href="">![Java 17](https://img.shields.io/badge/Java%2017-ee9258?logo=coffeescript&logoColor=ffffff&labelColor=606060&style=flat-square)</a>
-  <a href="">![Environment: Client & Server](https://img.shields.io/badge/environment-Client%20&%20Server-1976d2?style=flat-square)</a>
-  <a href="">[![Discord](https://img.shields.io/discord/973561601519149057.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2&style=flat-square)](https://discord.gg/KN9b3pjFTM)</a>
-
-</div>
-
 Easy, spectacular and fun melee combat system we know from Minecraft Dungeons.
 
 Add unique behaviour to your weapon, or just reuse a preset, using data files (aka JSON API).
+
+> This is an unofficial backport to 1.16.5. Please do not annoy the orignal author with support requests, just post them on the issues tab of this repo. 
 
 # ⭐️ Features
 
