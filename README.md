@@ -4,7 +4,7 @@ Easy, spectacular and fun melee combat system we know from Minecraft Dungeons.
 
 Add unique behaviour to your weapon, or just reuse a preset, using data files (aka JSON API).
 
-> This is an unofficial backport to 1.16.5. Please do not annoy the orignal author with support requests, just post them on the issues tab of this repo. 
+> This is an unofficial backport to 1.16.5. Please do not annoy the original author with support requests, just post them on the issues tab of this repo. 
 
 # ⭐️ Features
 
