@@ -1,0 +1,16 @@
+{
+  "loader": "forge",
+  "mc_versions": ["1.16.5"],
+  "changelogUrl": "https://github.com/LukeGrahamLandry/BetterCombat/wiki/Changelog",
+  "releaseType": "release",
+  "github": {
+    "owner": "LukeGrahamLandry",
+    "repo": "BetterCombat",
+    "branch": "1.16-next",
+    "requiredDependencies": {
+      "ForgedFabric 0.0.5+": "https://www.curseforge.com/minecraft/mc-mods/forgedfabric/files/all?filter-status=1&filter-game-version=2020709689%3A8203",
+      "playerAnimator 0.3.5": "https://www.curseforge.com/minecraft/mc-mods/playeranimator/files/3955873",
+      "Cloth Config": "https://www.curseforge.com/minecraft/mc-mods/cloth-config/files/3782784"
+    }
+  }
+}

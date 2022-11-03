@@ -76,3 +76,5 @@ components.java {
         skip()
     }
 }
+
+apply from: "https://moddingtutorials.org/web/publish.gradle"

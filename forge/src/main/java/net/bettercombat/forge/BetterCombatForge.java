@@ -3,6 +3,7 @@ package net.bettercombat.forge;
 import net.bettercombat.BetterCombat;
 import net.bettercombat.client.BetterCombatClient;
 import net.bettercombat.utils.SoundHelper;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraftforge.api.distmarker.Dist;
@@ -22,12 +23,6 @@ public class BetterCombatForge {
 
         registerSounds();
         SOUNDS.register(FMLJavaModLoadingContext.get().getModEventBus());
-
-//        ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class, () -> {
-//            return new ConfigGuiHandler.ConfigGuiFactory((minecraft, screen) -> {
-//                return AutoConfig.getConfigScreen(ClientConfigWrapper.class, screen).get();
-//            });
-//        });
     }
 
     private void registerSounds() {
